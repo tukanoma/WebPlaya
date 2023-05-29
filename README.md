@@ -40,7 +40,7 @@ or you can build the image by yourself
 
 ```bash
 git clone https://github.com/tukanoma/WebPlaya.git && cd WebPlaya
-docker build . -t WebPlaya:latest
+docker build . -t webplaya:latest
 ```
 ## Usage
 
