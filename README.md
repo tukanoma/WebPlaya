@@ -5,6 +5,12 @@ A simple web player that offers basic video  browsing and screenshot functions.
 - The screenshot quality is not affected by using Canvas.drawImage.
 - Generated screenshots will be automatically deleted after downloading, leaving no junk files.
 
+
+## Screenshot
+
+![](screen.webp)
+
+
 ## Quick Start
 
 You can either use docker-compose or the docker cli.
