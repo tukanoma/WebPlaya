@@ -1,5 +1,5 @@
 const fileList = document.getElementById('fileList');
-const videoPlayer = videojs('videoPlayer', {html5: {localStorage: {},hls: {withCredentials: false}}});
+const videoPlayer = videojs('videoPlayer', {html5: {localStorage: {}, hls: {withCredentials: false}}});
 const backButton = document.getElementById('backButton');
 const screenshotButton = document.getElementById('screenshotButton');
 const timeInput = document.getElementById('timeInput');
@@ -10,7 +10,7 @@ if (lastTime) {
     videoPlayer.currentTime(lastTime);
 }
 
-videoPlayer.on('timeupdate', function() {
+videoPlayer.on('timeupdate', function () {
     localStorage.setItem('lastTime', this.currentTime());
 });
 
@@ -137,7 +137,6 @@ document.addEventListener('keydown', event => {
             break;
     }
 });
-
 
 
 document.addEventListener('DOMContentLoaded', () => {
