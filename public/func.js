@@ -124,6 +124,17 @@ document.addEventListener('keydown', event => {
         case 'm':
             videoPlayer.muted(!videoPlayer.muted());
             break;
+        case 'f' :
+            if (document.fullscreenElement) {
+                document.exitFullscreen().then(() => {
+                });
+                break;
+            } else videoPlayer.requestFullscreen().then(() => {
+            });
+            break;
+        case 's':
+            screenshotButton.click();
+            break;
     }
 });
 
