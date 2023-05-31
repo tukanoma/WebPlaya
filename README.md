@@ -51,11 +51,13 @@ docker build . -t webplaya:latest
 
 ### Keyboard shortcuts.
 
- - Play or Pause : Space key
- - Fast-forward or rewind 1s :  ➡️ or ⬅️
- - Fast-forward or rewind 1/10s : Shift + ➡️ or ⬅️
- - Volume : ⬆️ or ⬇️
- - Mute audio :  M key
+- Play or Pause : Space key
+- Fast-forward or rewind 1s :  ➡️ or ⬅️
+- Fast-forward or rewind 1/10s : Shift + ➡️ or ⬅️
+- Volume : ⬆️ or ⬇️
+- Mute audio :  M key
+- Fullscreen : F key
+- Screenshot : S key (in fullscreen mode still works)
 
 The time format for jumping is xx:xx:xx, and it is also possible to input only minutes or seconds.
 (note that if the time entered exceeds the length of the video, only a screenshot of the current frame will be generated)
