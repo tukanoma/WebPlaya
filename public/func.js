@@ -45,47 +45,45 @@ backButton.onclick = () => {
 
 loadFiles();
 
-const takeScreenshot = (time) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = videoPlayer.videoWidth();
-    canvas.height = videoPlayer.videoHeight();
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoPlayer.tech_.el_, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob((blob) => {
-        const formData = new FormData();
-        formData.append('file', blob);
-        fetch('/screenshot', {method: 'POST', body: formData,}).then((response) => response.blob()).then((blob) => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            const currentTime = videoPlayer.currentTime();
-            const videoName = videoPlayer.src().split('/').pop().split('.')[0];
-            a.download = `${videoName}_${currentTime.toFixed(2)}s_Screenshot.png`;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-            }, 0);
-        });
-    });
+
+const takeScreenshot = async () => {
+    const offscreenCanvas = new OffscreenCanvas(videoPlayer.videoWidth(), videoPlayer.videoHeight());
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+    offscreenCtx.drawImage(videoPlayer.tech_.el_, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    const blob = await new Promise(resolve => offscreenCanvas.convertToBlob().then(resolve));
+    const formData = new FormData();
+    formData.append('file', blob);
+    const response = await fetch('/screenshot', {method: 'POST', body: formData});
+    const blob2 = await response.blob();
+    const a = document.createElement('a');
+    const currentTime = videoPlayer.currentTime();
+    const videoName = videoPlayer.src().split('/').pop().split('.')[0];
+    a.href = URL.createObjectURL(blob2);
+    a.download = `${videoName}_${currentTime.toFixed(2)}s_Screenshot.png`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    }, 0);
 };
 
 
 screenshotButton.onclick = async () => {
     const time = timeInput.value;
     const totalSeconds = time ? time.split(':').reduce((acc, cur) => (60 * acc) + +cur, 0) : 0;
-    if (totalSeconds >= videoPlayer.duration()){
+    if (totalSeconds >= videoPlayer.duration()) {
         timeInput.value = '';
         return;
     }
-    if (totalSeconds > 0 ) {
+    if (totalSeconds > 0) {
         await new Promise(resolve => {
             videoPlayer.currentTime(totalSeconds);
             videoPlayer.one('seeked', resolve);
         });
     }
-    takeScreenshot();
+    await takeScreenshot();
     timeInput.value = '';
 };
 
@@ -156,7 +154,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-
 
 

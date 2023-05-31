@@ -33,6 +33,7 @@ app.get('/files/:folderPath(*)', (req, res) => {
     });
 });
 
+
 app.post('/screenshot', upload.single('file'), (req, res) => {
     const imagePath = path.join(__dirname, 'uploads', req.file.filename + '.png');
     sharp(req.file.path)
@@ -49,6 +50,7 @@ app.post('/screenshot', upload.single('file'), (req, res) => {
             res.status(500).send({message: 'Error processing image'});
         });
 });
+
 
 app.get('/public/func.js', function (req, res) {
     res.set('Content-Type', 'text/javascript');
