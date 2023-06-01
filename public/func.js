@@ -3,10 +3,7 @@ const videoPlayer = videojs('videoPlayer', {html5: {localStorage: {}, hls: {with
 const backButton = document.getElementById('backButton');
 const screenshotButton = document.getElementById('screenshotButton');
 const timeInput = document.getElementById('timeInput');
-const fileIco = document.createElement('svg');
-fileIco.setAttribute('class', 'bi bi-file-earmark-play-fill');
-const folderIco = document.createElement('svg');
-folderIco.setAttribute('class', 'bi bi-folder-fill');
+
 
 let currentPath = '';
 
@@ -19,7 +16,16 @@ videoPlayer.on('timeupdate', function () {
     localStorage.setItem('lastTime', this.currentTime());
 });
 
-
+const addIconToLink = (link, file) => {
+    const icon = document.createElement('i');
+    if (file.type === 'directory') {
+        link.className = 'icon-link link-warning';
+        icon.className = ' bi bi-folder-fill';
+    } else {
+        icon.className = ' bi bi-file-earmark-play-fill';
+    }
+    link.insertBefore(icon, link.firstChild);
+};
 const loadFiles = (path = '') => {
     fileList.innerHTML = '';
     currentPath = path;
@@ -31,12 +37,7 @@ const loadFiles = (path = '') => {
             a.href = '#';
             a.className = 'icon-link';
             a.textContent = file.name;
-            if (file.type === 'directory') {
-                a.className = 'icon-link link-warning'
-                a.prepend(folderIco);
-            } else {
-                a.prepend(fileIco);
-            }
+            addIconToLink(a, file);
             a.onclick = () => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
