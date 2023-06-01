@@ -8,7 +8,7 @@ A simple web player that offers basic video  browsing and screenshot functions.
 
 ## Screenshot
 
-![](screen.webp)
+![](screenshot.webp)
 
 
 ## Quick Start
