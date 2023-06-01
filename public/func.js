@@ -3,6 +3,11 @@ const videoPlayer = videojs('videoPlayer', {html5: {localStorage: {}, hls: {with
 const backButton = document.getElementById('backButton');
 const screenshotButton = document.getElementById('screenshotButton');
 const timeInput = document.getElementById('timeInput');
+const fileIco = document.createElement('svg');
+fileIco.setAttribute('class', 'bi bi-file-earmark-play-fill');
+const folderIco = document.createElement('svg');
+folderIco.setAttribute('class', 'bi bi-folder-fill');
+
 let currentPath = '';
 
 const lastTime = localStorage.getItem('lastTime');
@@ -21,10 +26,17 @@ const loadFiles = (path = '') => {
     fetch(`/files/${path}`).then((response) => response.json()).then((files) => {
         files.forEach((file) => {
             const li = document.createElement('li');
-            li.className = 'list-group-item';
+            li.className = 'list-group-item list-group-item-action';
             const a = document.createElement('a');
             a.href = '#';
+            a.className = 'icon-link';
             a.textContent = file.name;
+            if (file.type === 'directory') {
+                a.className = 'icon-link link-warning'
+                a.prepend(folderIco);
+            } else {
+                a.prepend(fileIco);
+            }
             a.onclick = () => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
@@ -164,5 +176,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-
