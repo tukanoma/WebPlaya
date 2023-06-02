@@ -60,6 +60,12 @@ docker build . -t webplaya:latest
 - Screenshot : S key (in fullscreen mode still works)
 
 The time format for jumping is xx:xx:xx, and it is also possible to input only minutes or seconds.
-(note that if the time entered exceeds the length of the video, only a screenshot of the current frame will be generated)
+(note that if the time entered exceeds the length of the video, only a screenshot of the current frame will be
+generated)
 
 The generated screenshot file name is "video name _ screenshot time(convert in seconds) _Screenshot.png".
+
+## Credits
+
+- [Bootstrap](https://github.com/twbs/bootstrap)
+- [Video.js](https://github.com/videojs/video.js)
