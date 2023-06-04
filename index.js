@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const upload = multer({dest: 'uploads/'});
+const {exec} = require('child_process');
+const ffmpeg = require('fluent-ffmpeg');
 require('videojs-thumbnail-sprite');
 
 app.use(express.static('public'));
@@ -58,7 +60,37 @@ app.get('/public/func.js', function (req, res) {
     res.sendFile(__dirname + '/public/func.js');
 });
 
+app.get('/public/thumbs/:fileName', function (req, res) {
+    const fileName = req.params.fileName;
+    const filePath = path.join(__dirname, 'public/thumbs', fileName);
+    res.sendFile(filePath);
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+/*
+fs.watch('C:\\Users\\rippel\\WebstormProjects\\WebPlaya\\public\\videos', (eventType, filename) => {
+    if (eventType === 'rename') {
+        if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
+            ffmpeg.ffprobe(filename, function (err, metadata) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                const duration = metadata.format.duration;
+                generateVttFile(filename, duration);
+            });
+        }
+    }
+});
+
+const {generateThumbnails} = require('C:\\Users\\rippel\\WebstormProjects\\WebPlaya\\public\\webvtt.js');
+
+function generateVttFile(filename, duration) {
+    generateThumbnails(filename, duration);
+}
+*/

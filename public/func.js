@@ -1,21 +1,17 @@
-const fileList = document.getElementById('fileList');
-const videoPlayer = videojs('videoPlayer', {
-    html5: {
-        localStorage: {}, hls: {withCredentials: false}
-    }
+const videoPlayer = new Plyr('#player');
+const lastWatchedTime = localStorage.getItem('lastWatchedTime');
+if (lastWatchedTime) {
+    videoPlayer.currentTime = lastWatchedTime;
+}
+videoPlayer.on('timeupdate', () => {
+    localStorage.setItem('lastWatchedTime', videoPlayer.currentTime);
 });
-const backButton = document.getElementById('backButton');
-const screenshotButton = document.getElementById('screenshotButton');
-const timeInput = document.getElementById('timeInput');
+
+const fileList = document.getElementById('fileList');
 let currentPath = '';
 
-const lastTime = localStorage.getItem('lastTime');
-if (lastTime) {
-    videoPlayer.currentTime(lastTime);
-}
-
-videoPlayer.on('timeupdate', function () {
-    localStorage.setItem('lastTime', this.currentTime());
+document.addEventListener('DOMContentLoaded', () => {
+    loadFiles();
 });
 
 const addIconToLink = (link, file) => {
@@ -44,13 +40,21 @@ const loadFiles = (path = '') => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
                 } else {
-                    videoPlayer.src({src: `/videos${path}/${file.name}`, type: 'video/mp4'});
-                    let url = `/thumbs/${file.name}.jpg`;
-                    videoPlayer.spriteThumbnails({
-                        url: url,
-                        width: 160,
-                        height: 90
-                    });
+                    const thumbs = file.name.split('.').slice(0, -1).join('.') + '.vtt';
+                    videoPlayer.source = {
+                        type: 'video',
+                        sources: [
+                            {
+                                title: `${file.name}`,
+                                src: `  /videos${path}/${file.name}`,
+                                type: 'video/mp4',
+                            },
+                        ],
+                        previewThumbnails: {
+                            enabled: true,
+                            src: `/thumbs/${thumbs}`,
+                        },
+                    };
                 }
             };
             li.appendChild(a);
@@ -59,29 +63,46 @@ const loadFiles = (path = '') => {
     });
 };
 
-
-backButton.onclick = () => {
+const backButton = document.getElementById('backButton');
+backButton.addEventListener('click', () => {
     const parentPath = currentPath.split('/').slice(0, -1).join('/');
     loadFiles(parentPath);
-};
+});
 
-loadFiles();
-
+const screenshotButton = document.getElementById('screenshotButton');
+const timeInput = document.getElementById('timeInput');
+screenshotButton.addEventListener('click', async () => {
+    const time = timeInput.value;
+    const totalSeconds = time ? time.split(':').reduce((acc, cur) => (60 * acc) + +cur, 0) : 0;
+    if (totalSeconds >= videoPlayer.duration) {
+        timeInput.value = '';
+        return;
+    }
+    if (totalSeconds > 0) {
+        await new Promise(resolve => {
+            videoPlayer.currentTime = totalSeconds;
+            videoPlayer.once('seeked', resolve);
+        });
+    }
+    await takeScreenshot();
+    timeInput.value = '';
+});
 
 const takeScreenshot = async () => {
-    const offscreenCanvas = new OffscreenCanvas(videoPlayer.videoWidth(), videoPlayer.videoHeight());
+    const offscreenCanvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(videoPlayer.media.videoWidth, videoPlayer.media.videoHeight) : document.createElement('canvas');
     const offscreenCtx = offscreenCanvas.getContext('2d');
-    offscreenCtx.drawImage(videoPlayer.tech_.el_, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-    const blob = await new Promise(resolve => offscreenCanvas.convertToBlob().then(resolve));
+    offscreenCtx.drawImage(videoPlayer.media, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    const blob = await new Promise(resolve => offscreenCanvas.convertToBlob({type: 'image/png'}).then(resolve));
     const formData = new FormData();
     formData.append('file', blob);
     const response = await fetch('/screenshot', {method: 'POST', body: formData});
     const blob2 = await response.blob();
     const a = document.createElement('a');
-    const currentTime = videoPlayer.currentTime();
-    const videoName = videoPlayer.src().split('/').pop().split('.')[0];
+    const currentTime = videoPlayer.currentTime;
+    const videoName = videoPlayer.source.split('/').pop().split('.')[0];
+    const decodeName = decodeURI(videoName);
     a.href = URL.createObjectURL(blob2);
-    a.download = `${videoName}_${currentTime.toFixed(2)}s_Screenshot.png`;
+    a.download = `${decodeName}_${currentTime.toFixed(2)}s_Screenshot.png`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -92,99 +113,47 @@ const takeScreenshot = async () => {
 };
 
 
-screenshotButton.onclick = async () => {
-    const time = timeInput.value;
-    const totalSeconds = time ? time.split(':').reduce((acc, cur) => (60 * acc) + +cur, 0) : 0;
-    if (totalSeconds >= videoPlayer.duration()) {
-        timeInput.value = '';
-        return;
-    }
-    if (totalSeconds > 0) {
-        await new Promise(resolve => {
-            videoPlayer.currentTime(totalSeconds);
-            videoPlayer.one('seeked', resolve);
-        });
-    }
-    await takeScreenshot();
-    timeInput.value = '';
-};
-
-
-document.addEventListener('keydown', event => {
-    if (event.target === timeInput && event.key === 'Enter') {
+timeInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
         screenshotButton.click();
-        return;
     }
-    if (event.target === timeInput) {
-        return;
-    }
-    if (event.shiftKey) {
-        if (event.key === 'ArrowLeft') {
-            videoPlayer.currentTime(videoPlayer.currentTime() - 0.1);
-            return;
-        } else if (event.key === 'ArrowRight') {
-            videoPlayer.currentTime(videoPlayer.currentTime() + 0.1);
-            return;
-        }
-    }
-    switch (event.key) {
-        case ' ':
-            videoPlayer.paused() ? videoPlayer.play() : videoPlayer.pause();
-            break;
-        case 'ArrowLeft':
-            videoPlayer.currentTime(videoPlayer.currentTime() - 5);
-            break;
-        case 'ArrowRight':
-            videoPlayer.currentTime(videoPlayer.currentTime() + 5);
-            break;
-        case 'ArrowUp':
-            videoPlayer.volume(videoPlayer.volume() + 0.1);
-            break;
-        case 'ArrowDown':
-            videoPlayer.volume(videoPlayer.volume() - 0.1);
-            break;
-        case 'm':
-            videoPlayer.muted(!videoPlayer.muted());
-            break;
-        case 'f' :
-            if (document.fullscreenElement) {
-                document.exitFullscreen().then(() => {
-                });
+});
+// Add event listeners to the video player for keyboard shortcuts
+document.addEventListener('keydown', event => {
+    if (event.target !== timeInput) {
+        switch (event.key) {
+            case ' ':
+                videoPlayer.togglePlay();
                 break;
-            } else videoPlayer.requestFullscreen().then(() => {
-            });
-            break;
-        case 's':
-            screenshotButton.click();
-            break;
-    }
-});
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const themeButton = document.getElementById('themeButton');
-    const currentTheme = localStorage.getItem('theme');
-
-    if (currentTheme === 'dark') {
-        document.documentElement.setAttribute('data-bs-theme', 'dark');
-        themeButton.innerHTML = '☀';
-    } else {
-        document.documentElement.setAttribute('data-bs-theme', 'light');
-        themeButton.innerHTML = '&#x1f319;';
-    }
-
-    themeButton.addEventListener('click', () => {
-        const theme = document.documentElement.getAttribute('data-bs-theme');
-        if (theme === 'dark') {
-            document.documentElement.setAttribute('data-bs-theme', 'light');
-            themeButton.innerHTML = '&#x1f319;';
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-            themeButton.innerHTML = '☀';
-            localStorage.setItem('theme', 'dark');
+            case 'ArrowLeft':
+                if (event.shiftKey) {
+                    videoPlayer.rewind(0.1);
+                } else {
+                    videoPlayer.rewind(5);
+                }
+                break;
+            case 'ArrowRight':
+                if (event.shiftKey) {
+                    videoPlayer.forward(0.1);
+                } else {
+                    videoPlayer.forward(5);
+                }
+                break;
+            case 'ArrowUp':
+                videoPlayer.increaseVolume(0.1);
+                break;
+            case 'ArrowDown':
+                videoPlayer.decreaseVolume(0.1);
+                break;
+            case 'm':
+                videoPlayer.muted = !videoPlayer.muted;
+                break;
+            case 'f':
+                videoPlayer.fullscreen.toggle();
+                break;
+            case 's':
+                screenshotButton.click();
+                break;
         }
-    });
+    }
 });
-
-
