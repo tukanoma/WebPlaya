@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const upload = multer({dest: 'uploads/'});
+require('videojs-thumbnail-sprite');
 
 app.use(express.static('public'));
 

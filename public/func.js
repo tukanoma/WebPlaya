@@ -1,10 +1,12 @@
 const fileList = document.getElementById('fileList');
-const videoPlayer = videojs('videoPlayer', {html5: {localStorage: {}, hls: {withCredentials: false}}});
+const videoPlayer = videojs('videoPlayer', {
+    html5: {
+        localStorage: {}, hls: {withCredentials: false}
+    }
+});
 const backButton = document.getElementById('backButton');
 const screenshotButton = document.getElementById('screenshotButton');
 const timeInput = document.getElementById('timeInput');
-
-
 let currentPath = '';
 
 const lastTime = localStorage.getItem('lastTime');
@@ -43,6 +45,12 @@ const loadFiles = (path = '') => {
                     loadFiles(`${path}/${file.name}`);
                 } else {
                     videoPlayer.src({src: `/videos${path}/${file.name}`, type: 'video/mp4'});
+                    let url = `/thumbs/${file.name}.jpg`;
+                    videoPlayer.spriteThumbnails({
+                        url: url,
+                        width: 160,
+                        height: 90
+                    });
                 }
             };
             li.appendChild(a);
@@ -50,6 +58,7 @@ const loadFiles = (path = '') => {
         });
     });
 };
+
 
 backButton.onclick = () => {
     const parentPath = currentPath.split('/').slice(0, -1).join('/');
@@ -177,3 +186,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
