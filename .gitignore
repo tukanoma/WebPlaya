@@ -89,7 +89,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -128,8 +127,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-.public/videos/*
-
 .idea
 
-.public/thumbs/
+/public/videos/
+/public/thumbs/
