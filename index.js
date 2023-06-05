@@ -77,6 +77,7 @@ app.listen(PORT, () => {
 function watchVideos(dir) {
     chokidar.watch(dir, {ignored: /^\./, persistent: true})
         .on('add', (filePath) => {
+            console.log('Watching ' + filePath);
             if (filePath.endsWith('.mp4') || filePath.endsWith('.mkv')) {
                 ffmpeg.ffprobe(filePath, function (err, metadata) {
                     if (err) {
