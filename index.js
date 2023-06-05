@@ -10,7 +10,7 @@ const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
 
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 app.get('/files/:folderPath(*)', (req, res) => {
     const folderPath = req.params.folderPath || '';
