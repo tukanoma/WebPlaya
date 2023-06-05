@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const upload = multer({dest: 'uploads/'});
-const {exec} = require('child_process');
+const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
@@ -121,6 +121,11 @@ function generateVttFile(filename, duration) {
             }
             fs.writeFileSync(`${filename}.vtt`, thumbOutput);
             console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
+            const ffmpegProcess = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-y', '-o', `${filename}-%02d.jpg`]);
+            ffmpegProcess.on('close', (code) => {
+                console.log(`FFmpeg process exited with code ${code}`);
+            });
+            console.log(`${filename} thumbnail generation successes`);
         } else {
             console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt are already exists, skipping processing`);
         }
