@@ -99,19 +99,22 @@ function generateVttFile(filename, duration) {
             const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
             const totalImages = Math.floor(duration / interval); // Total no of thumbnails
             const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
-            let currentImageCount = 0;
-            let currentTime = startTime.clone();
-            let str = filename;
-            let newStr = str.replace(/^\/app\/public/, "");
+            let newStr = filename.replace(/^\/app\/public/, "");
             for (let k = 0; k < totalSpirits; k++) {
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < col; j++) {
-                        currentImageCount = k * row * col + i * col + j;
+                        const currentImageCount = k * row * col + i * col + j;
                         if (currentImageCount > totalImages) {
                             break;
                         }
-                        const thumbnailUrl = `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
-                        thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
+                        thumbOutput += `${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}\n`;
+
+                        thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${
+                            i * height
+                        },${width},${height}\n\n`;
+
+                        startTime.add(interval, 'seconds');
+                        endTime.add(interval, 'seconds');
                     }
                 }
             }

@@ -40,7 +40,6 @@ const loadFiles = (path = '') => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
                 } else {
-                    //const thumbs = file.name.split('.').slice(0, -1).join('.') + '.vtt';
                     videoPlayer.source = {
                         type: 'video',
                         sources: [
