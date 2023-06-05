@@ -107,6 +107,8 @@ function generateVttFile(filename, duration) {
             const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
             let currentImageCount = 0;
             let currentTime = startTime.clone();
+            let str = filename;
+            let newStr = str.replace(/^\/app\/public\//, "");
             for (let k = 0; k < totalSpirits; k++) {
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < col; j++) {
@@ -114,14 +116,14 @@ function generateVttFile(filename, duration) {
                         if (currentImageCount > totalImages) {
                             break;
                         }
-                        const thumbnailUrl = `${filename}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
+                        const thumbnailUrl = `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
                         thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
                     }
                 }
             }
             fs.writeFileSync(`${filename}.vtt`, thumbOutput);
             console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
-            const ffmpegProcess = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-y', '-o', `${filename}-%02d.jpg`]);
+            const ffmpegProcess = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-y', `${filename}-%02d.jpg`]);
             ffmpegProcess.on('close', (code) => {
                 console.log(`FFmpeg process exited with code ${code}`);
             });
