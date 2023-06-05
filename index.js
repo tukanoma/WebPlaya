@@ -72,8 +72,7 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-/*
-fs.watch('C:\\Users\\rippel\\WebstormProjects\\WebPlaya\\public\\videos', (eventType, filename) => {
+fs.watch('public/videos', (eventType, filename) => {
     if (eventType === 'rename') {
         if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
             ffmpeg.ffprobe(filename, function (err, metadata) {
@@ -83,14 +82,14 @@ fs.watch('C:\\Users\\rippel\\WebstormProjects\\WebPlaya\\public\\videos', (event
                 }
                 const duration = metadata.format.duration;
                 generateVttFile(filename, duration);
+                console.log(filename + 'succeeded');
             });
         }
     }
 });
 
-const {generateThumbnails} = require('C:\\Users\\rippel\\WebstormProjects\\WebPlaya\\public\\webvtt.js');
+const {generateThumbnails} = require('public/webvtt.js');
 
 function generateVttFile(filename, duration) {
     generateThumbnails(filename, duration);
 }
-*/

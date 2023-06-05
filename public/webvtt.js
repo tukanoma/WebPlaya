@@ -49,7 +49,5 @@ function generateThumbnails(thumbnailPrefix, duration) {
             }
         }
     }
-
-
     fs.writeFileSync(`public/thumbs/${thumbnailPrefix}.vtt`, thumbOutput);
 }
