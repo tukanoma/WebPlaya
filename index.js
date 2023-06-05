@@ -68,7 +68,7 @@ app.listen(PORT, () => {
 });
 
 function watchVideos(dir) {
-    chokidar.watch(dir, {ignored: /^\./, persistent: true})
+    chokidar.watch(dir, {ignored: [/^\./, '*.jpg'], persistent: true})
         .on('add', (filePath) => {
             console.log('Watching ' + filePath);
             if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
@@ -86,7 +86,7 @@ function watchVideos(dir) {
 
 watchVideos('/app/public/videos');
 
-function generateVttFile(filename, duration) {
+/*function generateVttFile(filename, duration) {
     fs.access(`${filename}.vtt`, (err) => {
         if (err) {
             const width = 320; // width of each thumbnail
@@ -129,4 +129,54 @@ function generateVttFile(filename, duration) {
             console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt are already exists, skipping processing`);
         }
     });
+}*/
+
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
+async function generateVttFile(filename, duration) {
+    try {
+        await fs.promises.access(`${filename}.vtt`);
+        console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt already exists, skipping processing`);
+        return;
+    } catch (err) {
+        const width = 320; // width of each thumbnail
+        const height = 180; // height of each thumbnail
+        const interval = 1; // Interval between thumbnails in seconds
+        const col = 15; // Number of thumbnails per row
+        const row = 15; // Number of thumbnails per column
+        let thumbOutput = 'WEBVTT\n\n';
+        const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
+        const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
+        const totalImages = Math.floor(duration / interval); // Total no of thumbnails
+        const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
+        let newStr = filename.replace(/^\/app\/public/, "");
+        for (let k = 0; k < totalSpirits; k++) {
+            for (let i = 0; i < row; i++) {
+                for (let j = 0; j < col; j++) {
+                    const currentImageCount = k * row * col + i * col + j;
+                    if (currentImageCount > totalImages) {
+                        break;
+                    }
+                    thumbOutput += `${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}\n`;
+
+                    thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${
+                        i * height
+                    },${width},${height}\n\n`;
+
+                    startTime.add(interval, 'seconds');
+                    endTime.add(interval, 'seconds');
+                }
+            }
+        }
+        fs.writeFileSync(`${filename}.vtt`, thumbOutput);
+        console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
+        const {
+            stdout,
+            stderr
+        } = await exec(`ffmpeg -i ${filename} -vf fps=1,scale=320:180,tile=15x15 -y ${filename}-%02d.jpg`);
+        console.log(`stdout: ${stdout}`);
+        console.log(`stderr: ${stderr}`);
+        console.log(`${filename} thumbnail generation successes`);
+    }
 }
