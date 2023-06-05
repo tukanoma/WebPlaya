@@ -9,6 +9,7 @@ const {exec} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 require('videojs-thumbnail-sprite');
+const moment = require("moment/moment");
 
 app.use(express.static('public'));
 
@@ -36,7 +37,6 @@ app.get('/files/:folderPath(*)', (req, res) => {
         res.send(fileList);
     });
 });
-
 
 
 app.post('/screenshot', upload.single('file'), (req, res) => {
@@ -86,7 +86,6 @@ function watchVideos(dir) {
                     }
                     const duration = metadata.format.duration;
                     generateVttFile(filePath, duration);
-                    console.log('\x1b[32m%s\x1b[0m', `${filePath} possessed`);
                 });
             }
         });
@@ -94,32 +93,38 @@ function watchVideos(dir) {
 
 watchVideos('/app/public/videos');
 
-
 function generateVttFile(filename, duration) {
-    const moment = require('moment');
-    const width = 320; // width of each thumbnail
-    const height = 180; // height of each thumbnail
-    const interval = 1; // Interval between thumbnails in seconds
-    const col = 15; // Number of thumbnails per row
-    const row = 15; // Number of thumbnails per column
-    let thumbOutput = 'WEBVTT\n\n';
-    const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
-    const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
-    const totalImages = Math.floor(duration / interval); // Total no of thumbnails
-    const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
-    let currentImageCount = 0;
-    let currentTime = startTime.clone();
-    for (let k = 0; k < totalSpirits; k++) {
-        for (let i = 0; i < row; i++) {
-            for (let j = 0; j < col; j++) {
-                currentImageCount = k * row * col + i * col + j;
-                if (currentImageCount > totalImages) {
-                    break;
+    fs.access(`${filename}.vtt`, (err) => {
+        if (err) {
+            const moment = require('moment');
+            const width = 320; // width of each thumbnail
+            const height = 180; // height of each thumbnail
+            const interval = 1; // Interval between thumbnails in seconds
+            const col = 15; // Number of thumbnails per row
+            const row = 15; // Number of thumbnails per column
+            let thumbOutput = 'WEBVTT\n\n';
+            const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
+            const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
+            const totalImages = Math.floor(duration / interval); // Total no of thumbnails
+            const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
+            let currentImageCount = 0;
+            let currentTime = startTime.clone();
+            for (let k = 0; k < totalSpirits; k++) {
+                for (let i = 0; i < row; i++) {
+                    for (let j = 0; j < col; j++) {
+                        currentImageCount = k * row * col + i * col + j;
+                        if (currentImageCount > totalImages) {
+                            break;
+                        }
+                        const thumbnailUrl = `${filename}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
+                        thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
+                    }
                 }
-                const thumbnailUrl = `${filename}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
-                thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
             }
+            fs.writeFileSync(`${filename}.vtt`, thumbOutput);
+            console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
+        } else {
+            console.log(`${filename} are already exists, skipping processing`);
         }
-    }
-    fs.writeFileSync(`${filename}.vtt`, thumbOutput);
+    });
 }
