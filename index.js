@@ -132,7 +132,6 @@ watchVideos('/app/public/videos');
 }*/
 
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
 
 async function generateVttFile(filename, duration) {
     try {
@@ -171,12 +170,15 @@ async function generateVttFile(filename, duration) {
         }
         fs.writeFileSync(`${filename}.vtt`, thumbOutput);
         console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
-        const {
-            stdout,
-            stderr
-        } = await exec(`ffmpeg -i ${filename} -vf fps=1,scale=320:180,tile=15x15 -y ${filename}-%02d.jpg`);
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
-        console.log(`${filename} thumbnail generation successes`);
+        const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-y', `${filename}-%02d.jpg`]);
+        ffmpeg.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
+        ffmpeg.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`);
+        });
+        ffmpeg.on('close', (code) => {
+            console.log(`${filename} thumbnail generation successes`);
+        });
     }
 }
