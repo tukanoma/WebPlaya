@@ -8,8 +8,7 @@ const upload = multer({dest: 'uploads/'});
 const {exec} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
-require('videojs-thumbnail-sprite');
-const moment = require("moment/moment");
+const moment = require("moment");
 
 app.use(express.static('public'));
 
@@ -96,7 +95,6 @@ watchVideos('/app/public/videos');
 function generateVttFile(filename, duration) {
     fs.access(`${filename}.vtt`, (err) => {
         if (err) {
-            const moment = require('moment');
             const width = 320; // width of each thumbnail
             const height = 180; // height of each thumbnail
             const interval = 1; // Interval between thumbnails in seconds
@@ -124,7 +122,7 @@ function generateVttFile(filename, duration) {
             fs.writeFileSync(`${filename}.vtt`, thumbOutput);
             console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
         } else {
-            console.log('\x1b[33m%s\x1b[0m', `${filename} are already exists, skipping processing`);
+            console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt are already exists, skipping processing`);
         }
     });
 }
