@@ -86,7 +86,7 @@ function watchVideos(dir) {
                     }
                     const duration = metadata.format.duration;
                     generateVttFile(filePath, duration);
-                    console.log(filePath + ' possessed');
+                    console.log('\x1b[32m%s\x1b[0m', `${filePath} possessed`);
                 });
             }
         });
