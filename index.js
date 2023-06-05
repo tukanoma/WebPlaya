@@ -121,5 +121,5 @@ function generateVttFile(filename, duration) {
             }
         }
     }
-    fs.writeFileSync(`/public/thumbs/${filename}.vtt`, thumbOutput);
+    fs.writeFileSync(`${filename}.vtt`, thumbOutput);
 }
