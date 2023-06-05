@@ -61,12 +61,6 @@ app.get('/public/func.js', function (req, res) {
     res.sendFile(__dirname + '/public/func.js');
 });
 
-app.get('/public/thumbs/:fileName', function (req, res) {
-    const fileName = req.params.fileName;
-    const filePath = path.join(__dirname, 'public/thumbs', fileName);
-    res.sendFile(filePath);
-});
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -107,8 +101,6 @@ function generateVttFile(filename, duration) {
             const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
             let currentImageCount = 0;
             let currentTime = startTime.clone();
-            let str = filename;
-            let newStr = str.replace(/^\/app\/public\//, "");
             for (let k = 0; k < totalSpirits; k++) {
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < col; j++) {
@@ -116,7 +108,7 @@ function generateVttFile(filename, duration) {
                         if (currentImageCount > totalImages) {
                             break;
                         }
-                        const thumbnailUrl = `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
+                        const thumbnailUrl = `${filename}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
                         thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
                     }
                 }
