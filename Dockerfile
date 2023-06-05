@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apk install ffmpeg
+RUN apk add ffmpeg
 
 RUN npm install --production  && npm cache clean --force
 
