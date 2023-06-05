@@ -40,19 +40,19 @@ const loadFiles = (path = '') => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
                 } else {
-                    const thumbs = file.name.split('.').slice(0, -1).join('.') + '.vtt';
+                    //const thumbs = file.name.split('.').slice(0, -1).join('.') + '.vtt';
                     videoPlayer.source = {
                         type: 'video',
                         sources: [
                             {
                                 title: `${file.name}`,
-                                src: `  /videos${path}/${file.name}`,
+                                src: `/videos${path}/${file.name}`,
                                 type: 'video/mp4',
                             },
                         ],
                         previewThumbnails: {
                             enabled: true,
-                            src: `/thumbs/${thumbs}`,
+                            src: `/videos${path}/${file.name}.vtt`,
                         },
                     };
                 }

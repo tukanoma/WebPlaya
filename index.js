@@ -78,7 +78,7 @@ function watchVideos(dir) {
     chokidar.watch(dir, {ignored: /^\./, persistent: true})
         .on('add', (filePath) => {
             console.log('Watching ' + filePath);
-            if (filePath.endsWith('.mp4') || filePath.endsWith('.mkv')) {
+            if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
                 ffmpeg.ffprobe(filePath, function (err, metadata) {
                     if (err) {
                         console.error(err);
