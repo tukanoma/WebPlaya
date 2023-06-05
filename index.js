@@ -72,21 +72,26 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-fs.watch('/app/public/videos', (eventType, filename) => {
-    if (eventType === 'rename') {
-        if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
-            ffmpeg.ffprobe(filename, function (err, metadata) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                const duration = metadata.format.duration;
-                generateVttFile(filename, duration);
-                console.log(filename + 'succeeded');
-            });
+function watchVideos(dir) {
+    fs.watch(dir, {recursive: true}, (eventType, filename) => {
+        if (eventType === 'rename') {
+            const filePath = path.join(dir, filename);
+            if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
+                ffmpeg.ffprobe(filePath, function (err, metadata) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    const duration = metadata.format.duration;
+                    generateVttFile(filePath, duration);
+                    console.log(filePath + ' succeeded');
+                });
+            }
         }
-    }
-});
+    });
+}
+
+watchVideos('/app/public/videos');
 
 const {generateThumbnails} = require('/app/public/webvtt.js');
 
