@@ -6,6 +6,7 @@ const path = require('path');
 const app = express();
 const upload = multer({dest: 'uploads/'});
 const {exec} = require('child_process');
+const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 require('videojs-thumbnail-sprite');
 
@@ -35,6 +36,7 @@ app.get('/files/:folderPath(*)', (req, res) => {
         res.send(fileList);
     });
 });
+
 
 
 app.post('/screenshot', upload.single('file'), (req, res) => {
@@ -73,10 +75,9 @@ app.listen(PORT, () => {
 });
 
 function watchVideos(dir) {
-    fs.watch(dir, {recursive: true}, (eventType, filename) => {
-        if (eventType === 'rename') {
-            const filePath = path.join(dir, filename);
-            if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
+    chokidar.watch(dir, {ignored: /^\./, persistent: true})
+        .on('add', (filePath) => {
+            if (filePath.endsWith('.mp4') || filePath.endsWith('.mkv')) {
                 ffmpeg.ffprobe(filePath, function (err, metadata) {
                     if (err) {
                         console.error(err);
@@ -84,11 +85,10 @@ function watchVideos(dir) {
                     }
                     const duration = metadata.format.duration;
                     generateVttFile(filePath, duration);
-                    console.log(filePath + ' succeeded');
+                    console.log(filePath + ' possessed');
                 });
             }
-        }
-    });
+        });
 }
 
 watchVideos('/app/public/videos');
