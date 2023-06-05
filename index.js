@@ -10,7 +10,7 @@ const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
 
-app.use(express.static('public'));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/files/:folderPath(*)', (req, res) => {
     const folderPath = req.params.folderPath || '';
@@ -101,6 +101,8 @@ function generateVttFile(filename, duration) {
             const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
             let currentImageCount = 0;
             let currentTime = startTime.clone();
+            let str = filename;
+            let newStr = str.replace(/^\/app\/public/, "");
             for (let k = 0; k < totalSpirits; k++) {
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < col; j++) {
@@ -108,7 +110,7 @@ function generateVttFile(filename, duration) {
                         if (currentImageCount > totalImages) {
                             break;
                         }
-                        const thumbnailUrl = `${filename}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
+                        const thumbnailUrl = `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}`;
                         thumbOutput += `${currentTime.format('HH:mm:ss.SSS')} --> ${currentTime.add(interval, 'seconds').format('HH:mm:ss.SSS')}\n${thumbnailUrl}\n\n`;
                     }
                 }
