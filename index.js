@@ -72,7 +72,7 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-fs.watch('/public/videos', (eventType, filename) => {
+fs.watch('/app/public/videos', (eventType, filename) => {
     if (eventType === 'rename') {
         if (filename.endsWith('.mp4') || filename.endsWith('.mkv')) {
             ffmpeg.ffprobe(filename, function (err, metadata) {
@@ -88,7 +88,7 @@ fs.watch('/public/videos', (eventType, filename) => {
     }
 });
 
-const {generateThumbnails} = require('/public/webvtt.js');
+const {generateThumbnails} = require('/app/public/webvtt.js');
 
 function generateVttFile(filename, duration) {
     generateThumbnails(filename, duration);
