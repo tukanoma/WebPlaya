@@ -127,14 +127,14 @@ document.addEventListener('keydown', event => {
                 break;
             case 'ArrowLeft':
                 if (event.shiftKey) {
-                    videoPlayer.rewind(0.1);
+                    videoPlayer.rewind(0.05);
                 } else {
                     videoPlayer.rewind(5);
                 }
                 break;
             case 'ArrowRight':
                 if (event.shiftKey) {
-                    videoPlayer.forward(0.1);
+                    videoPlayer.forward(0.05);
                 } else {
                     videoPlayer.forward(5);
                 }
