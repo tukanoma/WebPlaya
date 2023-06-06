@@ -131,7 +131,6 @@ watchVideos('/app/public/videos');
     });
 }*/
 
-const util = require('util');
 
 async function generateVttFile(filename, duration) {
     try {
@@ -170,7 +169,7 @@ async function generateVttFile(filename, duration) {
         }
         fs.writeFileSync(`${filename}.vtt`, thumbOutput);
         console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
-        const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-y', `${filename}-%02d.jpg`]);
+        const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', `${filename}-%02d.jpg`]);
         ffmpeg.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`);
         });
