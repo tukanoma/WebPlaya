@@ -68,7 +68,7 @@ app.listen(PORT, () => {
 });
 
 function watchVideos(dir) {
-    chokidar.watch(dir, {ignored: [/^\./, '*.jpg'], persistent: true})
+    chokidar.watch(dir, {ignored: [/^\./, '*.jpg', '*.vtt'], persistent: true})
         .on('add', (filePath) => {
             console.log('Watching ' + filePath);
             if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
