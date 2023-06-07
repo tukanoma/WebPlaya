@@ -78,14 +78,9 @@ app.listen(PORT, () => {
 app.get('/thumbs', async (req, res) => {
     try {
         const result = await watchVideos();
-        if (result) {
-            res.send({message: 'OK'})
-        } else {
-            res.send({message: 'Error'});
-        }
+        res.send('OK');
     } catch (error) {
-        console.log(error);
-        res.send({message: 'Error'});
+        res.send('Error');
     }
 });
 
