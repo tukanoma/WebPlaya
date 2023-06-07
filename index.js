@@ -67,29 +67,14 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-/*app.get('/thumbs', (req, res) => {
-    watchVideos().then((result) => {
-        if (result) {
-            res.send({message: 'OK'})
-        } else res.send({message: 'Error'});
-    }).catch((error) => {
-        console.log(error);
-    });
-});*/
-
-app.get('/thumbs', async (req, res) => {
-    try {
-        const result = await watchVideos();
-        if (result) {
-            res.send({message: 'OK'})
-        } else {
-            res.send({message: 'Error'});
-        }
-    } catch (error) {
-        console.log(error);
-        res.send({message: 'Error'});
+app.get('/thumbs', (req, res) => {
+    if (watchVideos()) {
+        res.send('OK');
+    } else {
+        res.send('Error');
     }
 });
+
 
 const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
 
@@ -127,7 +112,7 @@ const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, 
 }*/
 
 
-async function watchVideos() {
+function watchVideos() {
     watcher.on('add', async (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
@@ -160,6 +145,7 @@ async function watchVideos() {
             return true;
         }
     });
+    return true;
 }
 
 //watchVideos('/app/public/videos');
