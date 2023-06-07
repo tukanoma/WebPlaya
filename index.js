@@ -67,8 +67,7 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-app.get('/thumbs', (req, res) => {
-
+/*app.get('/thumbs', (req, res) => {
     watchVideos().then((result) => {
         if (result) {
             res.send({message: 'OK'})
@@ -76,8 +75,21 @@ app.get('/thumbs', (req, res) => {
     }).catch((error) => {
         console.log(error);
     });
-});
+});*/
 
+app.get('/thumbs', async (req, res) => {
+    try {
+        const result = await watchVideos();
+        if (result) {
+            res.send({message: 'OK'})
+        } else {
+            res.send({message: 'Error'});
+        }
+    } catch (error) {
+        console.log(error);
+        res.send({message: 'Error'});
+    }
+});
 
 const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
 
