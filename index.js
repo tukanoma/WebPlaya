@@ -78,7 +78,7 @@ app.get('/thumbs', (req, res) => {
 
 const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
 
-/*function watchVideos() {
+function watchVideos() {
     watcher.on('add', async (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
@@ -109,44 +109,8 @@ const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, 
         return true;
     });
     return true;
-}*/
-
-
-function watchVideos() {
-    watcher.on('add', async (filePath) => {
-        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
-            console.log('Watching ' + filePath);
-            try {
-                const metadata = await ffmpeg.promisified.ffprobe(filePath);
-                const duration = metadata.format.duration;
-                await generateVttFile(filePath, duration);
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-            return true;
-        }
-    });
-    watcher.on('unlink', async (filePath) => {
-        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
-            console.log(filePath + 'Was deleted');
-            try {
-                await fs.promises.unlink(filePath + '.vtt');
-                for (let i = 1; i <= 10; i++) {
-                    const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
-                    await fs.promises.unlink(filename);
-                    console.log(`${filename} was deleted`);
-                }
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-            await watcher.unwatch(filePath);
-            return true;
-        }
-    });
-    return true;
 }
+
 
 //watchVideos('/app/public/videos');
 
