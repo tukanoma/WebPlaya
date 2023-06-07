@@ -84,7 +84,7 @@ function watchVideos(dir) {
         });
 }
 
-watchVideos('/app/public/videos');
+//watchVideos('/app/public/videos');
 
 /*function generateVttFile(filename, duration) {
     fs.access(`${filename}.vtt`, (err) => {
@@ -136,11 +136,11 @@ async function generateVttFile(filename, duration) {
     try {
         await fs.promises.access(`${filename}.vtt`);
         console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt already exists, skipping processing`);
-        return;
+
     } catch (err) {
-        const width = 320;
-        const height = 180;
-        const interval = 1;
+        const width = 160;
+        const height = 90;
+        const interval = 5;
         const col = 15;
         const row = 15;
         let thumbOutput = 'WEBVTT\n\n';
@@ -173,7 +173,7 @@ async function generateVttFile(filename, duration) {
             if (!err) {
                 return;
             }
-            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=1,scale=320:180,tile=15x15', '-n', `${filename}-%02d.jpg`]);
+            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', 'fps=0.2,scale=160:90,tile=15x15', '-n', `${filename}-%02d.jpg`]);
             ffmpeg.stdout.on('data', (data) => {
                 console.log(`stdout: ${data}`);
             });

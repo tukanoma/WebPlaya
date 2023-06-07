@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadFiles();
 });
 
+const createThumbnail = document.getElementById('generateButton');
+createThumbnail.addEventListener('click', () => {
+    watchVideos('/app/public/videos');
+});
+
 const addIconToLink = (link, file) => {
     const icon = document.createElement('i');
     if (file.type === 'directory') {
