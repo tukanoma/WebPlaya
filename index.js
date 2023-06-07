@@ -75,10 +75,8 @@ app.get('/thumbs', (req, res) => {
     }
 });
 
-
-const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
-
 function watchVideos() {
+    const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
