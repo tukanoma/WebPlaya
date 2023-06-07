@@ -67,15 +67,68 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-app.get('/thumbs', (req, res) => {
+/*app.get('/thumbs', (req, res) => {
     if (watchVideos()) {
         res.send('OK');
     } else {
         res.send('Error');
     }
+});*/
+
+app.get('/thumbs', async (req, res) => {
+    try {
+        const result = await watchVideos();
+        if (result) {
+            res.send({message: 'OK'})
+        } else {
+            res.send({message: 'Error'});
+        }
+    } catch (error) {
+        console.log(error);
+        res.send({message: 'Error'});
+    }
 });
 
-function watchVideos() {
+
+async function watchVideos() {
+    const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
+    watcher.on('add', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
+            console.log('Watching ' + filePath);
+            try {
+                const metadata = await ffmpeg.promisified.ffprobe(filePath);
+                const duration = metadata.format.duration;
+                await generateVttFile(filePath, duration);
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+        }
+        return true;
+    });
+    watcher.on('unlink', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
+            console.log(filePath + 'Was deleted');
+            try {
+                await fs.promises.unlink(filePath + '.vtt');
+                for (let i = 1; i <= 10; i++) {
+                    const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
+                    await fs.promises.unlink(filename);
+                    console.log(`${filename} was deleted`);
+                }
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+            await watcher.unwatch(filePath);
+        }
+        return true;
+    });
+    return true;
+}
+
+
+/*function watchVideos() {
     const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
@@ -106,7 +159,7 @@ function watchVideos() {
         return true;
     });
     return true;
-}
+}*/
 
 
 //watchVideos('/app/public/videos');
