@@ -68,27 +68,86 @@ app.listen(PORT, () => {
 });
 
 app.get('/thumbs', (req, res) => {
-    if (watchVideos('/app/public/videos')) {
-        res.send({message: 'OK'})
-    } else res.send({message: 'Error'});
+
+    watchVideos().then((result) => {
+        if (result) {
+            res.send({message: 'OK'})
+        } else res.send({message: 'Error'});
+    }).catch((error) => {
+        console.log(error);
+    });
 });
 
-function watchVideos(dir) {
-    chokidar.watch(dir, {ignored: [/^\./, '*.jpg', '*.vtt'], persistent: true})
-        .on('add', (filePath) => {
+
+const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
+
+/*function watchVideos() {
+    watcher.on('add', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
-            if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
-                ffmpeg.ffprobe(filePath, function (err, metadata) {
-                    if (err) {
-                        console.error(err);
-                        return false;
-                    }
-                    const duration = metadata.format.duration;
-                    generateVttFile(filePath, duration);
+            ffmpeg.ffprobe(filePath, function (err, metadata) {
+                if (err) {
+                    console.error(err);
+                    return false;
+                }
+                const duration = metadata.format.duration;
+                generateVttFile(filePath, duration);
+            });
+        }
+        return true;
+    });
+    watcher.on('unlink', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
+            console.log(filePath + 'Was deleted');
+            fs.unlinkSync(filePath + '.vtt');
+            for (let i = 1; i <= 10; i++) {
+                const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
+                fs.unlink(filename, (err) => {
+                    if (err) throw err;
+                    console.log(`${filename} was deleted`);
                 });
             }
-        });
+        }
+        await watcher.unwatch(filePath);
+        return true;
+    });
     return true;
+}*/
+
+
+async function watchVideos() {
+    watcher.on('add', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
+            console.log('Watching ' + filePath);
+            try {
+                const metadata = await ffmpeg.promisified.ffprobe(filePath);
+                const duration = metadata.format.duration;
+                await generateVttFile(filePath, duration);
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+            return true;
+        }
+    });
+    watcher.on('unlink', async (filePath) => {
+        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
+            console.log(filePath + 'Was deleted');
+            try {
+                await fs.promises.unlink(filePath + '.vtt');
+                for (let i = 1; i <= 10; i++) {
+                    const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
+                    await fs.promises.unlink(filename);
+                    console.log(`${filename} was deleted`);
+                }
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
+            await watcher.unwatch(filePath);
+            return true;
+        }
+    });
 }
 
 //watchVideos('/app/public/videos');
@@ -165,9 +224,7 @@ async function generateVttFile(filename, duration) {
                     }
                     thumbOutput += `${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}\n`;
 
-                    thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${
-                        i * height
-                    },${width},${height}\n\n`;
+                    thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}\n\n`;
 
                     startTime.add(interval, 'seconds');
                     endTime.add(interval, 'seconds');

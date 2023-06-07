@@ -16,9 +16,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const createThumbnail = document.getElementById('generateButton');
 createThumbnail.addEventListener('click', () => {
-    fetch('thumbs').then(r => r.json()).then(data => {
-        console.log(data);
-    });
+    createThumbnail.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+    setTimeout(() => {
+        fetch('thumbs').then(r => r.json()).then(data => {
+            if (data.message === 'OK') {
+                createThumbnail.classList.remove('btn-secondary');
+                createThumbnail.classList.add('btn-success');
+                createThumbnail.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            } else {
+                createThumbnail.classList.remove('btn-secondary');
+                createThumbnail.classList.add('btn-danger');
+                createThumbnail.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>';
+            }
+            setTimeout(() => {
+                createThumbnail.classList.remove('btn-success', 'btn-danger');
+                createThumbnail.classList.add('btn-secondary');
+                createThumbnail.innerHTML = '<i class="bi bi-images"></i>';
+            }, 1500);
+        });
+    }, 500);
 });
 
 const addIconToLink = (link, file) => {

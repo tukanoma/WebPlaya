@@ -32,6 +32,10 @@
             overflow-x: hidden;
             white-space: normal;
         }
+
+        #generateButton {
+            transition: all 1s ease-in-out;
+        }
     </style>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -48,7 +52,8 @@
             <div style="margin-top: 20px;"></div>
             <video controls id="player" playsinline></video>
             <div class="input-group mt-3" style="display: flex; align-items: center;">
-                <input class="form-control" id="timeInput" placeholder="Jump to xx:xx:xx" type="text">
+                <label for="timeInput"></label><input class="form-control" id="timeInput" placeholder="Jump to xx:xx:xx"
+                                                      type="text">
                 <button id="screenshotButton" class="btn btn-success"
                         style="flex-basis: auto; flex-grow: 0.01; flex-shrink: 1;">Screenshot
                 </button>
@@ -58,7 +63,12 @@
             <div style="margin-top: 20px;"></div>
             <div class="button-container" style="display: flex; justify-content: space-between;">
                 <button id="backButton" class="btn btn-danger">Back</button>
-                <button class="btn btn-secondary" id="generateButton">G</button>
+                <button class="btn btn-secondary"
+                        id="generateButton"
+                        style="width: 42px; height: 38px"
+                        title="Generate video preview thumbnails (this operation is highly resource-intensive, please use it during idle time).">
+                    <i class="bi bi-images"></i>
+                </button>
             </div>
             <div style="margin-top: 20px;"></div>
             <div class="list-group" id="fileList" style="width:278px;height: 600px; overflow-y: auto;"></div>
