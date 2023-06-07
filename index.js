@@ -67,6 +67,12 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
+app.get('/thumbs', (req, res) => {
+    if (watchVideos('/app/public/videos')) {
+        res.send({message: 'OK'})
+    } else res.send({message: 'Error'});
+});
+
 function watchVideos(dir) {
     chokidar.watch(dir, {ignored: [/^\./, '*.jpg', '*.vtt'], persistent: true})
         .on('add', (filePath) => {
@@ -75,13 +81,14 @@ function watchVideos(dir) {
                 ffmpeg.ffprobe(filePath, function (err, metadata) {
                     if (err) {
                         console.error(err);
-                        return;
+                        return false;
                     }
                     const duration = metadata.format.duration;
                     generateVttFile(filePath, duration);
                 });
             }
         });
+    return true;
 }
 
 //watchVideos('/app/public/videos');

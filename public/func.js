@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const createThumbnail = document.getElementById('generateButton');
 createThumbnail.addEventListener('click', () => {
-    watchVideos('/app/public/videos');
+    fetch('thumbs').then(r => r.json()).then(data => {
+        console.log(data);
+    });
 });
 
 const addIconToLink = (link, file) => {
