@@ -91,9 +91,14 @@ async function watchVideos() {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
             try {
-                const metadata = await ffmpeg.promisified.ffprobe(filePath);
-                const duration = metadata.format.duration;
-                await generateVttFile(filePath, duration);
+                ffmpeg.ffprobe(filePath, async function (err, metadata) {
+                    if (err) {
+                        console.error(err);
+                        return false;
+                    }
+                    const duration = metadata.format.duration;
+                    await generateVttFile(filePath, duration);
+                });
             } catch (err) {
                 console.error(err);
                 return false;
