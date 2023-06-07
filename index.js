@@ -79,7 +79,7 @@ app.get('/thumbs', (req, res) => {
 const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
 
 function watchVideos() {
-    watcher.on('add', async (filePath) => {
+    watcher.on('add', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log('Watching ' + filePath);
             ffmpeg.ffprobe(filePath, function (err, metadata) {
@@ -93,7 +93,7 @@ function watchVideos() {
         }
         return true;
     });
-    watcher.on('unlink', async (filePath) => {
+    watcher.on('unlink', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log(filePath + 'Was deleted');
             fs.unlinkSync(filePath + '.vtt');
@@ -105,7 +105,6 @@ function watchVideos() {
                 });
             }
         }
-        await watcher.unwatch(filePath);
         return true;
     });
     return true;
