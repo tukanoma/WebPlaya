@@ -13,6 +13,7 @@ const moment = require("moment");
 app.use(express.static('public'));
 
 app.get('/files/:folderPath(*)', (req, res) => {
+    console.log(req.url);
     const folderPath = req.params.folderPath || '';
     const directoryPath = path.join(__dirname, 'public/videos', folderPath);
 
