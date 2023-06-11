@@ -19,6 +19,7 @@ createThumbnail.addEventListener('click', () => {
     createThumbnail.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
     setTimeout(() => {
         fetch('thumbs').then(r => r.json()).then(data => {
+            console.log(data);
             if (data.message === 'OK') {
                 createThumbnail.classList.remove('btn-secondary');
                 createThumbnail.classList.add('btn-success');

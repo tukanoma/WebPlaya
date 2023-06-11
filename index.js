@@ -68,25 +68,25 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-/*app.get('/thumbs', (req, res) => {
+app.get('/thumbs', (req, res) => {
     if (watchVideos()) {
         res.send('OK');
     } else {
         res.send('Error');
     }
-});*/
+});
 
-app.get('/thumbs', async (req, res) => {
+/*app.get('/thumbs', async (req, res) => {
     try {
         const result = await watchVideos();
         res.send('OK');
     } catch (error) {
         res.send('Error');
     }
-});
+});*/
 
 
-async function watchVideos() {
+/*async function watchVideos() {
     const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', async (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
@@ -126,10 +126,10 @@ async function watchVideos() {
         return true;
     });
     return true;
-}
+}*/
 
 
-/*function watchVideos() {
+function watchVideos() {
     const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
@@ -160,7 +160,7 @@ async function watchVideos() {
         return true;
     });
     return true;
-}*/
+}
 
 
 //watchVideos('/app/public/videos');
