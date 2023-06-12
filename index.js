@@ -1,22 +1,30 @@
-const express = require('express');
-const multer = require('multer');
+const multer = require('fastify-multer');
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
-const app = express();
 const upload = multer({dest: 'uploads/'});
 const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
+const fastify = require('fastify')({logger: false});
+const multipart = require('@fastify/multipart');
 
-app.use(express.static('public'));
+fastify.register(multipart);
 
-app.get('/files/:folderPath(*)', (req, res) => {
-    console.log(req.url);
+fastify.register(require('@fastify/static'), {
+    root: path.join(__dirname, 'public')
+})
+fastify.get('/', function (req, res) {
+    res.sendFile('index.html');
+});
+
+fastify.get('/files', (req, res) => {
+    res.redirect(301, '/files/');
+});
+fastify.get('/files/:folderPath', function (req, res) {
     const folderPath = req.params.folderPath || '';
     const directoryPath = path.join(__dirname, 'public/videos', folderPath);
-
     fs.readdir(directoryPath, (err, files) => {
         if (err) {
             return res.status(500).send({message: 'Unable to scan folder'});
@@ -39,39 +47,16 @@ app.get('/files/:folderPath(*)', (req, res) => {
 });
 
 
-app.post('/screenshot', upload.single('file'), (req, res) => {
-    const imagePath = path.join(__dirname, 'uploads', req.file.filename + '.png');
-    sharp(req.file.path)
-        .toFile(imagePath)
-        .then(() => {
-            res.download(imagePath, () => {
-                fs.unlink(imagePath, () => {
-                });
-                fs.unlink(req.file.path, () => {
-                });
-            });
-        })
-        .catch(() => {
-            res.status(500).send({message: 'Error processing image'});
-        });
-});
+fastify.listen({port: 3000}, (err, address) => {
+    if (err) throw err
+    fastify.log.info(`server listening on ${address}`);
+})
 
-
-app.get('/public/func.js', function (req, res) {
-    res.set('Content-Type', 'text/javascript');
-    res.sendFile(__dirname + '/public/func.js');
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
-app.get('/thumbs', (req, res) => {
+fastify.get('/thumbs/', (req, res) => {
     if (watchVideos()) {
-        res.json({status: 'success'});
+        res.send({status: 'success'});
     } else {
-        res.status(500).json({error: 'An error occurred'});
+        res.status(500).send({error: 'An error occurred'});
     }
 });
 

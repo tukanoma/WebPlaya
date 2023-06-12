@@ -9,6 +9,7 @@ const createThumbnail = document.getElementById('generateButton');
 function generateThumbnail() {
     setTimeout(() => {
         fetch('thumbs').then(r => r.json()).then(data => {
+            console.log(data);
             if (data.status === 'success') {
                 createThumbnail.classList.remove('btn-secondary');
                 createThumbnail.classList.add('btn-success');
@@ -45,12 +46,11 @@ let currentPath = '';
 const loadFiles = (path = '') => {
     fileList.innerHTML = '';
     currentPath = path;
-    fetch(`/files/${path}`).then((response) => response.json()).then((files) => {
+    fetch(`/files${path}`).then((response) => response.json()).then((files) => {
         files.forEach((file) => {
             const li = document.createElement('li');
             li.className = 'list-group-item list-group-item-action';
             const a = document.createElement('a');
-            //a.href = '#';
             a.className = 'icon-link';
             a.textContent = file.name;
             addIconToLink(a, file);
@@ -127,19 +127,15 @@ timeInput.addEventListener('keydown', event => {
 });
 
 async function takeScreenshot() {
-    const offscreenCanvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(videoPlayer.media.videoWidth, videoPlayer.media.videoHeight) : document.createElement('canvas');
+    const offscreenCanvas = new OffscreenCanvas(videoPlayer.media.videoWidth, videoPlayer.media.videoHeight);
     const offscreenCtx = offscreenCanvas.getContext('2d');
     offscreenCtx.drawImage(videoPlayer.media, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
     const blob = await new Promise(resolve => offscreenCanvas.convertToBlob({type: 'image/png'}).then(resolve));
-    const formData = new FormData();
-    formData.append('file', blob);
-    const response = await fetch('/screenshot', {method: 'POST', body: formData});
-    const blob2 = await response.blob();
     const a = document.createElement('a');
     const currentTime = videoPlayer.currentTime;
     const videoName = videoPlayer.source.split('/').pop().split('.')[0];
     const decodeName = decodeURI(videoName);
-    a.href = URL.createObjectURL(blob2);
+    a.href = URL.createObjectURL(blob);
     a.download = `${decodeName}_${currentTime.toFixed(2)}s_Screenshot.png`;
     a.style.display = 'none';
     document.body.appendChild(a);
