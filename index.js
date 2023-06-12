@@ -1,16 +1,10 @@
-const multer = require('fastify-multer');
-const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
-const upload = multer({dest: 'uploads/'});
 const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
 const fastify = require('fastify')({logger: false});
-const multipart = require('@fastify/multipart');
-
-fastify.register(multipart);
 
 fastify.register(require('@fastify/static'), {
     root: path.join(__dirname, 'public')
