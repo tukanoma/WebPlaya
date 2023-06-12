@@ -15,7 +15,7 @@ ENV SSL_CERT_PATH=/etc/ssl/private/cert.pem
 
 RUN apk add ffmpeg
 
-RUN npm install --production  && npm cache clean --force
+RUN npm install --omit=dev  && npm cache clean --force
 
 COPY . .
 
