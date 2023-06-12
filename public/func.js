@@ -1,26 +1,16 @@
 const videoPlayer = new Plyr('#player');
-const lastWatchedTime = localStorage.getItem('lastWatchedTime');
-if (lastWatchedTime) {
-    videoPlayer.currentTime = lastWatchedTime;
-}
-videoPlayer.on('timeupdate', () => {
-    localStorage.setItem('lastWatchedTime', videoPlayer.currentTime);
-});
-
-const fileList = document.getElementById('fileList');
-let currentPath = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadFiles();
 });
 
 const createThumbnail = document.getElementById('generateButton');
+
 createThumbnail.addEventListener('click', () => {
     createThumbnail.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
     setTimeout(() => {
         fetch('thumbs').then(r => r.json()).then(data => {
-            console.log(data);
-            if (data.message === 'OK') {
+            if (data.status === 'success') {
                 createThumbnail.classList.remove('btn-secondary');
                 createThumbnail.classList.add('btn-success');
                 createThumbnail.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
@@ -38,6 +28,7 @@ createThumbnail.addEventListener('click', () => {
     }, 500);
 });
 
+//Add the icon before the link.
 const addIconToLink = (link, file) => {
     const icon = document.createElement('i');
     if (file.type === 'directory') {
@@ -48,6 +39,10 @@ const addIconToLink = (link, file) => {
     }
     link.insertBefore(icon, link.firstChild);
 };
+
+const title = document.getElementById('title');
+const fileList = document.getElementById('fileList');
+let currentPath = '';
 const loadFiles = (path = '') => {
     fileList.innerHTML = '';
     currentPath = path;
@@ -56,7 +51,7 @@ const loadFiles = (path = '') => {
             const li = document.createElement('li');
             li.className = 'list-group-item list-group-item-action';
             const a = document.createElement('a');
-            a.href = '#';
+            //a.href = '#';
             a.className = 'icon-link';
             a.textContent = file.name;
             addIconToLink(a, file);
@@ -64,6 +59,7 @@ const loadFiles = (path = '') => {
                 if (file.type === 'directory') {
                     loadFiles(`${path}/${file.name}`);
                 } else {
+                    title.innerHTML = file.name.replace(/\.[^/.]+$/, '');
                     videoPlayer.source = {
                         type: 'video',
                         sources: [
@@ -78,6 +74,13 @@ const loadFiles = (path = '') => {
                             src: `/videos${path}/${file.name}.vtt`,
                         },
                     };
+                    //Automatically jump to the corresponding time if the video has been played before.
+                    const lastWatchedTime = localStorage.getItem(file.name);
+                    if (lastWatchedTime) {
+                        setTimeout(() => {
+                            videoPlayer.forward(parseFloat(lastWatchedTime));
+                        }, 500);
+                    }
                 }
             };
             li.appendChild(a);
@@ -85,6 +88,13 @@ const loadFiles = (path = '') => {
         });
     });
 };
+
+//record the current playback time.
+videoPlayer.on('timeupdate', () => {
+    const fileName = decodeURIComponent(videoPlayer.source.split('/').pop());
+    localStorage.setItem(fileName, videoPlayer.currentTime);
+});
+
 
 const backButton = document.getElementById('backButton');
 backButton.addEventListener('click', () => {
@@ -111,7 +121,13 @@ screenshotButton.addEventListener('click', async () => {
     timeInput.value = '';
 });
 
-const takeScreenshot = async () => {
+timeInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+        screenshotButton.click();
+    }
+});
+
+async function takeScreenshot() {
     const offscreenCanvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(videoPlayer.media.videoWidth, videoPlayer.media.videoHeight) : document.createElement('canvas');
     const offscreenCtx = offscreenCanvas.getContext('2d');
     offscreenCtx.drawImage(videoPlayer.media, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
@@ -133,15 +149,8 @@ const takeScreenshot = async () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
     }, 0);
-};
+}
 
-
-timeInput.addEventListener('keydown', event => {
-    if (event.key === 'Enter') {
-        screenshotButton.click();
-    }
-});
-// Add event listeners to the video player for keyboard shortcuts
 document.addEventListener('keydown', event => {
     if (event.target !== timeInput) {
         switch (event.key) {
@@ -149,17 +158,21 @@ document.addEventListener('keydown', event => {
                 videoPlayer.togglePlay();
                 break;
             case 'ArrowLeft':
-                if (event.shiftKey) {
+                if (event.shiftKey && event.ctrlKey) {
                     videoPlayer.rewind(0.05);
+                } else if (event.shiftKey) {
+                    videoPlayer.rewind(1);
                 } else {
-                    videoPlayer.rewind(5);
+                    videoPlayer.rewind(10);
                 }
                 break;
             case 'ArrowRight':
-                if (event.shiftKey) {
+                if (event.shiftKey && event.ctrlKey) {
                     videoPlayer.forward(0.05);
+                } else if (event.shiftKey) {
+                    videoPlayer.forward(1);
                 } else {
-                    videoPlayer.forward(5);
+                    videoPlayer.forward(10);
                 }
                 break;
             case 'ArrowUp':

@@ -52,8 +52,9 @@ docker build . -t webplaya:latest
 ### Keyboard shortcuts.
 
 - Play or Pause : Space key
-- Fast-forward or rewind 1s :  ➡️ or ⬅️
-- Fast-forward or rewind 1/10s : Shift + ➡️ or ⬅️
+- Fast-forward or Fast-rewind 10s :  ➡️ or ⬅️
+- Forward or rewind 1s : Shift + ➡️ or ⬅️
+- Forward or rewind 1/50s : Shift + Ctrl + ➡️ or ⬅️
 - Volume : ⬆️ or ⬇️
 - Mute audio :  M key
 - Fullscreen : F key
@@ -68,4 +69,4 @@ The generated screenshot file name is "video name _ screenshot time(convert in s
 ## Credits
 
 - [Bootstrap](https://github.com/twbs/bootstrap)
-- [Video.js](https://github.com/videojs/video.js)
+- [plyr](https://github.com/sampotts/plyr)

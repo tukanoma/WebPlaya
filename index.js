@@ -70,65 +70,14 @@ app.listen(PORT, () => {
 
 app.get('/thumbs', (req, res) => {
     if (watchVideos()) {
-        res.send('OK');
+        res.json({status: 'success'});
     } else {
-        res.send('Error');
+        res.status(500).json({error: 'An error occurred'});
     }
 });
 
-/*app.get('/thumbs', async (req, res) => {
-    try {
-        const result = await watchVideos();
-        res.send('OK');
-    } catch (error) {
-        res.send('Error');
-    }
-});*/
-
-
-/*async function watchVideos() {
-    const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
-    watcher.on('add', async (filePath) => {
-        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
-            console.log('Watching ' + filePath);
-            try {
-                ffmpeg.ffprobe(filePath, async function (err, metadata) {
-                    if (err) {
-                        console.error(err);
-                        return false;
-                    }
-                    const duration = metadata.format.duration;
-                    await generateVttFile(filePath, duration);
-                });
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-        }
-        return true;
-    });
-    watcher.on('unlink', async (filePath) => {
-        if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
-            console.log(filePath + 'Was deleted');
-            try {
-                await fs.promises.unlink(filePath + '.vtt');
-                for (let i = 1; i <= 10; i++) {
-                    const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
-                    await fs.promises.unlink(filename);
-                    console.log(`${filename} was deleted`);
-                }
-            } catch (err) {
-                console.error(err);
-                return false;
-            }
-            await watcher.unwatch(filePath);
-        }
-        return true;
-    });
-    return true;
-}*/
-
-
+/*Monitor changes in the folder and automatically call the generateVttFile() function to generate a thumbnail if a new video file is detected.
+If the corresponding video file is deleted, automatically clean up the corresponding .vtt and thumbnail files.*/
 function watchVideos() {
     const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', (filePath) => {
@@ -140,24 +89,27 @@ function watchVideos() {
                     return false;
                 }
                 const duration = metadata.format.duration;
-                generateVttFile(filePath, duration);
+                generateVttFile(filePath, duration).then(() => {
+                    return true;
+                });
             });
         }
-        return true;
     });
     watcher.on('unlink', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log(filePath + 'Was deleted');
             fs.unlinkSync(filePath + '.vtt');
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 99; i++) {
                 const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
                 fs.unlink(filename, (err) => {
-                    if (err) throw err;
+                    if (err) return;
                     console.log(`${filename} was deleted`);
                 });
             }
         }
-        return true;
+    });
+    watcher.on('ready', () => {
+        console.log('\x1b[32m%s\x1b[0m', 'Initial scan complete. Ready for changes.');
     });
     return true;
 }
@@ -210,7 +162,7 @@ async function generateVttFile(filename, duration) {
             ffmpeg.stderr.on('data', (data) => {
                 console.log(`stderr: ${data}`);
             });
-            ffmpeg.on('close', (code) => {
+            ffmpeg.on('close', () => {
                 console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
             });
         });
