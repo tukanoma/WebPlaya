@@ -3,8 +3,7 @@ A simple web player that offers basic video  browsing and screenshot functions.
 
 - Supports mainstream video formats.
 - The screenshot quality is not affected by using Canvas.drawImage.
-- Generated screenshots will be automatically deleted after downloading, leaving no junk files.
-
+- Supported HTTP/2 and improved file delivery efficiency.
 
 ## Screenshot
 
