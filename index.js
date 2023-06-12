@@ -11,7 +11,7 @@ const fastify = require('fastify')({
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH)
     },
-    logger: false
+    logger: true
 });
 
 fastify.register(require('@fastify/static'), {
