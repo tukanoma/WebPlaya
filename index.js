@@ -4,7 +4,14 @@ const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
-const fastify = require('fastify')({logger: false});
+const fastify = require('fastify')({
+    http2: true,
+    https: {
+        key: fs.readFileSync(process.env.SSL_KEY_PATH),
+        cert: fs.readFileSync(process.env.SSL_CERT_PATH)
+    },
+    logger: false
+});
 
 fastify.register(require('@fastify/static'), {
     root: path.join(__dirname, 'public')
@@ -41,7 +48,7 @@ fastify.get('/files/:folderPath', function (req, res) {
 });
 
 
-fastify.listen({port: 3000}, (err, address) => {
+fastify.listen({port: 3000, host: '0.0.0.0'}, (err, address) => {
     if (err) throw err
     fastify.log.info(`server listening on ${address}`);
 })
