@@ -42,32 +42,54 @@
     <title>WebPlaya</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdn.plyr.io/3.7.8/plyr.css" rel="stylesheet"/>
     <link rel="shortcut icon" type="image/x-icon" href="fav.png">
 </head>
 <body>
 <div class="container-fluid">
+    <div aria-hidden="true" aria-labelledby="modalLabel" class="modal fade" data-bs-backdrop="static"
+         data-bs-keyboard="false" id="myModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalLabel">Generate Thumbnails</h1>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body">
+                    Generate video preview thumbnails, This operation requires significant computational resources,
+                    please use it during idle times.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                    <button class="btn btn-primary" data-bs-dismiss="modal" onclick="generateThumbnail()" type="button">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-left">
             <div style="margin-top: 15px;"></div>
             <h6 class="text-center" id="title">WebPlaya</h6>
             <video controls id="player"></video>
-            <div class="input-group mt-3" style="display: flex; align-items: center;">
+            <div class="input-group mb-3" style="display: flex; align-items: center;">
                 <input class="form-control" id="timeInput" placeholder="Jump to xx:xx:xx"
                        type="text"><label for="timeInput"></label>
                 <button id="screenshotButton" class="btn btn-success"
-                        style="flex-basis: auto; flex-grow: 0.01; flex-shrink: 1;">Screenshot
+                        style="flex-basis: auto; flex-grow: 0.01; flex-shrink: 1;">
+                    <i class="bi bi-camera-fill"></i>
+                    Screenshot
                 </button>
             </div>
         </div>
         <div class="col-right">
             <div style="margin-top: 45px;"></div>
             <div class="button-container" style="display: flex; justify-content: space-between;">
-                <button id="backButton" class="btn btn-danger">Back</button>
-                <button class="btn btn-secondary"
-                        id="generateButton"
-                        style="width: 42px; height: 38px"
-                        title="Generate video preview thumbnails (this operation is highly resource-intensive, please use it during idle time).">
+                <button class="btn btn-danger" id="backButton"><i class="bi bi-backspace-fill"></i> Back</button>
+                <button class="btn btn-secondary" data-bs-target="#myModal" data-bs-toggle="modal" id="generateButton"
+                        type="button">
                     <i class="bi bi-images"></i>
                 </button>
             </div>

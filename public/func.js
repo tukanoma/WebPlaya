@@ -6,8 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const createThumbnail = document.getElementById('generateButton');
 
-createThumbnail.addEventListener('click', () => {
-    createThumbnail.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+function generateThumbnail() {
     setTimeout(() => {
         fetch('thumbs').then(r => r.json()).then(data => {
             if (data.status === 'success') {
@@ -26,7 +25,7 @@ createThumbnail.addEventListener('click', () => {
             }, 1500);
         });
     }, 500);
-});
+}
 
 //Add the icon before the link.
 const addIconToLink = (link, file) => {
