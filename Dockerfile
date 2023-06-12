@@ -4,20 +4,17 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN mkdir /certs
-
 RUN apk add --no-cache openssl
 
-RUN openssl req -x509 -newkey rsa:4096 -keyout /certs/key.pem -out /certs/cert.pem -days 365 -nodes -subj "/CN=localhost"
-
-COPY certs /app/certs
+RUN openssl req -x509 -newkey rsa:4096 -keyout /etc/ssl/private/key.pem -out /etc/ssl/private/cert.>
 
 ENV NODE_ENV=production
 ENV HTTPS=true
-ENV SSL_KEY_PATH=/app/certs/key.pem
-ENV SSL_CERT_PATH=/app/certs/cert.pem
+ENV SSL_KEY_PATH=/etc/ssl/private/key.pem
+ENV SSL_CERT_PATH=/etc/ssl/private/cert.pem
 
 RUN apk add ffmpeg
+
 
 RUN npm install --production  && npm cache clean --force
 
