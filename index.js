@@ -5,12 +5,12 @@ const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
 const fastify = require('fastify')({
-/*    http2: true,
+    http2: true,
     https: {
         allowHTTP1: true,
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH)
-    },*/
+    },
     logger: false
 });
 
