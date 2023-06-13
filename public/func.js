@@ -57,7 +57,7 @@ function loadFiles(path = '') {
                     if (lastWatchedTime) {
                         setTimeout(() => {
                             videoPlayer.forward(parseFloat(lastWatchedTime));
-                        }, 100);
+                        }, 500);
                     }
                 }
             };
@@ -195,6 +195,7 @@ continuePlay.addEventListener('click', () => {
     const lastWatchedName = localStorage.getItem('lastWatched');
     const source = localStorage.getItem('source');
     const watchedTime = localStorage.getItem(lastWatchedName);
+    title.innerHTML = lastWatchedName.replace(/\.[^/.]+$/, '');
     videoPlayer.source = {
         type: 'video',
         sources: [
@@ -211,5 +212,5 @@ continuePlay.addEventListener('click', () => {
     };
     setTimeout(() => {
         videoPlayer.forward(parseFloat(watchedTime));
-    }, 100);
+    }, 500);
 });
