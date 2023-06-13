@@ -11,14 +11,14 @@ const fastify = require('fastify')({
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH)
     },
-    logger: true
+    logger: false
 });
 
 fastify.register(require('@fastify/static'), {
     root: path.join(__dirname, 'public')
 })
-fastify.get('/', function (req, res) {
-    res.sendFile('index.html');
+fastify.get('/', async function (req, res) {
+    return res.sendFile('index.html');
 });
 
 fastify.get('/files', (req, res) => {
@@ -55,7 +55,7 @@ fastify.listen({port: 3000, host: '0.0.0.0'}, (err, address) => {
 })
 
 fastify.get('/thumbs/', (req, res) => {
-    if (watchVideos()) {
+    if (monitorFiles()) {
         res.send({status: 'success'});
     } else {
         res.status(500).send({error: 'An error occurred'});
@@ -64,7 +64,7 @@ fastify.get('/thumbs/', (req, res) => {
 
 /*Monitor changes in the folder and automatically call the generateVttFile() function to generate a thumbnail if a new video file is detected.
 If the corresponding video file is deleted, automatically clean up the corresponding .vtt and thumbnail files.*/
-function watchVideos() {
+function monitorFiles() {
     const watcher = chokidar.watch('/app/public/videos', {ignored: /(^|[\/\\])\../, persistent: true});
     watcher.on('add', (filePath) => {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
@@ -75,7 +75,7 @@ function watchVideos() {
                     return false;
                 }
                 const duration = metadata.format.duration;
-                generateVttFile(filePath, duration).then(() => {
+                generateVttThumbnail(filePath, duration).then(() => {
                     return true;
                 });
             });
@@ -101,11 +101,10 @@ function watchVideos() {
 }
 
 
-async function generateVttFile(filename, duration) {
+async function generateVttThumbnail(filename, duration) {
     try {
         await fs.promises.access(`${filename}.vtt`);
         console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt already exists, skipping processing`);
-
     } catch (err) {
         const width = 320;
         const height = 180;
