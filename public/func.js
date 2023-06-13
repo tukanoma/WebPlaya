@@ -105,7 +105,7 @@ async function takeScreenshot() {
     const blob = await offscreenCanvas.convertToBlob({type: 'image/png'});
     const a = document.createElement('a');
     const currentTime = videoPlayer.currentTime;
-    const videoName = source.split('/').pop().split('.')[0];
+    const videoName = videoPlayer.source.split('/').pop().split('.')[0];
     const decodeName = decodeURIComponent(videoName);
     a.href = URL.createObjectURL(blob);
     a.download = `${decodeName}_${currentTime.toFixed(2)}s_Screenshot.png`;
