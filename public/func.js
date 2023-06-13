@@ -5,6 +5,8 @@ const fileList = document.getElementById('fileList');
 const backButton = document.getElementById('backButton');
 const screenshotButton = document.getElementById('screenshotButton');
 const timeInput = document.getElementById('timeInput');
+const liveToast = document.getElementById('liveToast');
+const continuePlay = document.getElementById('continuePlay');
 
 //Add the icon before the link.
 function addIconToLink(link, file) {
@@ -87,10 +89,13 @@ function generateThumbnail() {
     }, 500);
 }
 
-//record the current playback time.
+//record the current playback time and the video name.
 videoPlayer.on('timeupdate', () => {
-    const fileName = decodeURIComponent(videoPlayer.source.split('/').pop());
+    const source = videoPlayer.source;
+    const fileName = decodeURIComponent(source.split('/').pop());
     localStorage.setItem(fileName, videoPlayer.currentTime);
+    localStorage.setItem('lastWatched', fileName);
+    localStorage.setItem('source', source);
 });
 
 async function takeScreenshot() {
@@ -100,7 +105,7 @@ async function takeScreenshot() {
     const blob = await offscreenCanvas.convertToBlob({type: 'image/png'});
     const a = document.createElement('a');
     const currentTime = videoPlayer.currentTime;
-    const videoName = videoPlayer.source.split('/').pop().split('.')[0];
+    const videoName = source.split('/').pop().split('.')[0];
     const decodeName = decodeURIComponent(videoName);
     a.href = URL.createObjectURL(blob);
     a.download = `${decodeName}_${currentTime.toFixed(2)}s_Screenshot.png`;
@@ -115,6 +120,9 @@ async function takeScreenshot() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadFiles();
+    if (localStorage.getItem('lastWatched')) {
+        bootstrap.Toast.getOrCreateInstance(liveToast).show();
+    }
 });
 document.addEventListener('keydown', event => {
     if (event.target !== timeInput) {
@@ -182,4 +190,26 @@ screenshotButton.addEventListener('click', async () => {
     }
     await takeScreenshot();
     timeInput.value = '';
+});
+continuePlay.addEventListener('click', () => {
+    const lastWatchedName = localStorage.getItem('lastWatched');
+    const source = localStorage.getItem('source');
+    const watchedTime = localStorage.getItem(lastWatchedName);
+    videoPlayer.source = {
+        type: 'video',
+        sources: [
+            {
+                title: lastWatchedName,
+                src: source,
+                type: 'video/mp4',
+            },
+        ],
+        previewThumbnails: {
+            enabled: true,
+            src: `${source}.vtt`,
+        },
+    };
+    setTimeout(() => {
+        videoPlayer.forward(parseFloat(watchedTime));
+    }, 100);
 });

@@ -70,6 +70,24 @@
             </div>
         </div>
     </div>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div aria-atomic="true" aria-live="assertive" class="toast" id="liveToast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-play-btn-fill"></i>
+                <strong class="me-auto" style="margin-left: 10px"> Recently played </strong>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="toast" type="button"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+                Continue playing the previously watched video?
+            </div>
+            <div class="px-2 py-2">
+                <button class="btn btn-primary btn-sm" data-bs-dismiss="toast" id="continuePlay" type="button">
+                    Continue
+                </button>
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="toast" type="button">Close</button>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-left">
             <div style="margin-top: 15px;"></div>
