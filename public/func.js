@@ -55,7 +55,7 @@ function loadFiles(path = '') {
                     if (lastWatchedTime) {
                         setTimeout(() => {
                             videoPlayer.forward(parseFloat(lastWatchedTime));
-                        }, 500);
+                        }, 100);
                     }
                 }
             };
