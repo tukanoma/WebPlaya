@@ -69,7 +69,7 @@ function loadFiles(path = '') {
 
 function generateThumbnail() {
     setTimeout(() => {
-        fetch('thumbs').then(r => r.json()).then(data => {
+        fetch('thumbs/').then(r => r.json()).then(data => {
             console.log(data);
             if (data.status === 'success') {
                 createThumbnail.classList.remove('btn-secondary');
