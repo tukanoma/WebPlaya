@@ -85,8 +85,8 @@ function monitorFiles() {
         if (filePath.endsWith('.mkv') || filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.avi')) {
             console.log(filePath + 'Was deleted');
             fs.unlinkSync(filePath + '.vtt');
-            for (let i = 1; i <= 99; i++) {
-                const filename = `${filePath}-${i.toString().padStart(2, '0')}.jpg`;
+            for (let i = 1; i <= 10000; i++) {
+                const filename = `${filePath}-${i.toString().padStart(5, '0')}.jpg`;
                 fs.unlink(filename, (err) => {
                     if (err) return;
                     console.log(`${filename} was deleted`);
