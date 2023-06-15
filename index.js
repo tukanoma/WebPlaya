@@ -246,9 +246,8 @@ let runningTasks = 0;
 const maxConcurrentTasks = 2;
 const ffmpegQueue = [];
 
-function generateVttThumbnail(filename, duration) {
+/*function generateVttThumbnail(filename, duration) {
     const vttFilePath = `${filename}.vtt`;
-
     try {
         fs.accessSync(vttFilePath);
         console.log('\x1b[33m%s\x1b[0m', `${vttFilePath} already exists, skipping processing`);
@@ -309,6 +308,96 @@ function generateVttThumbnail(filename, duration) {
 }
 
 function startFFmpeg() {
+    const task = ffmpegQueue.shift();
+    if (!task) {
+        return;
+    }
+    runningTasks++;
+    const {filename, fps, width, height, col, row} = task;
+    const ffmpeg = spawn('ffmpeg', [
+        '-i', `${filename}`,
+        '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`,
+        '-q:v', '30',
+        `${filename}-%05d.jpg`
+    ]);
+    ffmpeg.on('start', () => {
+        console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
+    });
+    ffmpeg.on('close', () => {
+        console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation success`);
+        runningTasks--;
+        if (ffmpegQueue.length > 0) {
+            startFFmpeg();
+        }
+    });
+}*/
+const util = require('util');
+const access = util.promisify(fs.access);
+const writeFile = util.promisify(fs.writeFile);
+
+async function generateVttThumbnail(filename, duration) {
+    const vttFilePath = `${filename}.vtt`;
+    try {
+        await access(vttFilePath);
+        console.log('\x1b[33m%s\x1b[0m', `${vttFilePath} already exists, skipping processing`);
+    } catch (err) {
+        const width = 320;
+        const height = 180;
+        const interval = 1;
+        const fps = 1 / interval;
+        const col = 10;
+        const row = 10;
+        const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
+        const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
+        const totalImages = Math.floor(duration / interval);
+        const totalSpirits = Math.ceil(duration / interval / (row * col));
+        const newStr = filename.replace(/^\/app\/public/, "");
+        const thumbOutput = [];
+
+        for (let k = 0; k < totalSpirits; k++) {
+            for (let i = 0; i < row; i++) {
+                for (let j = 0; j < col; j++) {
+                    const currentImageCount = k * row * col + i * col + j;
+                    if (currentImageCount > totalImages) {
+                        break;
+                    }
+                    thumbOutput.push(`${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}`);
+                    thumbOutput.push(`${newStr}-${(k + 1).toString().padStart(5, '0')}.jpg#xywh=${j * width},${i * height},${width},${height}`);
+                    thumbOutput.push('');
+                    startTime.add(interval, 'seconds');
+                    endTime.add(interval, 'seconds');
+                }
+            }
+        }
+
+        try {
+            await writeFile(vttFilePath, thumbOutput.join('\n'));
+            console.log('\x1b[32m%s\x1b[0m', `${vttFilePath} generated`);
+        } catch (err) {
+            console.error('\x1b[31m%s\x1b[0m', `${vttFilePath} failed to write`);
+            return;
+        }
+
+        const thumbnailPath = `${filename}-${totalImages.toString().padStart(5, '0')}.jpg`;
+        try {
+            await access(thumbnailPath);
+        } catch (err) {
+            ffmpegQueue.push({
+                filename,
+                fps,
+                width,
+                height,
+                col,
+                row
+            });
+            if (runningTasks < maxConcurrentTasks) {
+                startFFmpeg();
+            }
+        }
+    }
+}
+
+async function startFFmpeg() {
     const task = ffmpegQueue.shift();
     if (!task) {
         return;
