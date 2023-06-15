@@ -228,8 +228,8 @@ function startFFmpeg(filename, fps, width, height, col, row) {
     ffmpeg.on('start', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
     });
-    ffmpeg.progress.on('progress', (progress) => {
-        console.log(`Processing: ${filename}` + progress.percent + '% done)');
+    ffmpeg.stderr.on('data', (data) => {
+        console.log(data);
     });
     ffmpeg.on('close', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
