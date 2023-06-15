@@ -4,8 +4,7 @@ const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
-const {Queue} = require('queue-typescript');
-const ffmpegQueue = new Queue();
+const ffmpegQueue = [];
 
 const fastify = require('fastify')({
     http2: true,
@@ -208,7 +207,7 @@ async function generateVttThumbnail(filename, duration) {
             if (!err) {
                 return;
             }
-            ffmpegQueue.enqueue({
+            ffmpegQueue.push({
                 filename,
                 fps,
                 width,
@@ -224,7 +223,7 @@ async function generateVttThumbnail(filename, duration) {
 }
 
 function startFFmpeg() {
-    const task = ffmpegQueue.peek();
+    const task = ffmpegQueue.shift();
     if (!task) {
         return;
     }
