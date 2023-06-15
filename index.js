@@ -101,6 +101,9 @@ function monitorFiles() {
 }
 
 
+const MAX_CONCURRENT_PROCESSES = 2;
+let runningProcesses = 0;
+
 async function generateVttThumbnail(filename, duration) {
     try {
         await fs.promises.access(`${filename}.vtt`);
@@ -138,19 +141,32 @@ async function generateVttThumbnail(filename, duration) {
         }
         fs.writeFileSync(`${filename}.vtt`, thumbOutput);
         console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
-        fs.access(`${filename}-00001.jpg`, (err) => {
+        //check if the thumbnail already exists them skip the thumbnail generation
+        fs.access(`${filename}-${totalImages.toString().padStart(5, '0')}.jpg`, (err) => {
             if (!err) {
                 return;
             }
+            if (runningProcesses >= MAX_CONCURRENT_PROCESSES) {
+                console.log('Maximum number of concurrent processes reached. Skipping thumbnail generation for', filename);
+                return;
+            }
+            runningProcesses++;
             const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v', '30', `${filename}-%05d.jpg`]);
-            ffmpeg.stdout.on('data', (data) => {
-                console.log(`stdout: ${data}`);
+            /*            ffmpeg.stdout.on('data', (data) => {
+                            console.log(`stdout: ${data}`);
+                        });
+                        ffmpeg.stderr.on('data', (data) => {
+                            console.log(`stderr: ${data}`);
+                        });*/
+            ffmpeg.on('start', () => {
+                console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
             });
-            ffmpeg.stderr.on('data', (data) => {
-                console.log(`stderr: ${data}`);
+            ffmpeg.on('progress', (progress) => {
+                console.log(`Processing: ${filename}` + progress.percent + '% done');
             });
             ffmpeg.on('close', () => {
                 console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
+                runningProcesses--;
             });
         });
     }
