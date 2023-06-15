@@ -165,6 +165,10 @@ async function generateVttThumbnail(filename, duration) {
 }*/
 
 
+let runningTasks = 0;
+const maxConcurrentTasks = 2;
+
+
 function generateVttThumbnail(filename, duration) {
     try {
         fs.accessSync(`${filename}.vtt`);
@@ -213,7 +217,7 @@ function generateVttThumbnail(filename, duration) {
                 col,
                 row
             });
-            if (ffmpegQueue.length <= 2) {
+            if (runningTasks < maxConcurrentTasks) {
                 startFFmpeg();
             }
         });
@@ -225,6 +229,7 @@ function startFFmpeg() {
     if (!task) {
         return;
     }
+    runningTasks++;
     const {filename, fps, width, height, col, row} = task;
     const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v', '30', `${filename}-%05d.jpg`]);
     ffmpeg.on('start', () => {
@@ -232,6 +237,7 @@ function startFFmpeg() {
     });
     ffmpeg.on('close', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
+        runningTasks--;
         if (ffmpegQueue.length > 0) {
             startFFmpeg();
         }
