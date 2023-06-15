@@ -181,8 +181,8 @@ async function generateVttThumbnail(filename, duration) {
         let thumbOutput = 'WEBVTT\n\n';
         const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
         const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
-        const totalImages = Math.floor(duration / interval); // Total no of thumbnails
-        const totalSpirits = Math.ceil(duration / interval / (row * col)); // Total no of spirits
+        const totalImages = Math.floor(duration / interval);
+        const totalSpirits = Math.ceil(duration / interval / (row * col));
         let newStr = filename.replace(/^\/app\/public/, "");
         for (let k = 0; k < totalSpirits; k++) {
             for (let i = 0; i < row; i++) {
@@ -201,7 +201,7 @@ async function generateVttThumbnail(filename, duration) {
             }
         }
         fs.writeFileSync(`${filename}.vtt`, thumbOutput);
-        console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
+        console.log('\x1b[32m%s\x1b[0m', `${filename} vtt file generated`);
         //check if the thumbnail already exists them skip the thumbnail generation
         fs.access(`${filename}-${totalImages.toString().padStart(5, '0')}.jpg`, (err) => {
             if (!err) {
@@ -228,8 +228,8 @@ function startFFmpeg(filename, fps, width, height, col, row) {
     ffmpeg.on('start', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
     });
-    ffmpeg.on('progress', (progress) => {
-        console.log(`Processing: ${filename}` + progress.percent + '% done');
+    ffmpeg.progress.on('progress', (progress) => {
+        console.log(`Processing: ${filename}` + progress.percent + '% done)');
     });
     ffmpeg.on('close', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
