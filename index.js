@@ -208,7 +208,7 @@ async function generateVttThumbnail(filename, duration) {
             if (!err) {
                 return;
             }
-            ffmpegQueue.push({
+            ffmpegQueue.enqueue({
                 filename,
                 fps,
                 width,
@@ -224,7 +224,7 @@ async function generateVttThumbnail(filename, duration) {
 }
 
 function startFFmpeg() {
-    const task = ffmpegQueue.shift();
+    const task = ffmpegQueue.peek();
     if (!task) {
         return;
     }
