@@ -4,7 +4,6 @@ const {spawn} = require('child_process');
 const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
-const ffmpegQueue = [];
 
 const fastify = require('fastify')({
     http2: true,
@@ -165,10 +164,8 @@ async function generateVttThumbnail(filename, duration) {
 }*/
 
 
-let runningTasks = 0;
+/*let runningTasks = 0;
 const maxConcurrentTasks = 2;
-
-
 function generateVttThumbnail(filename, duration) {
     try {
         fs.accessSync(`${filename}.vtt`);
@@ -237,6 +234,98 @@ function startFFmpeg() {
     });
     ffmpeg.on('close', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
+        runningTasks--;
+        if (ffmpegQueue.length > 0) {
+            startFFmpeg();
+        }
+    });
+}*/
+
+
+let runningTasks = 0;
+const maxConcurrentTasks = 2;
+const ffmpegQueue = [];
+
+function generateVttThumbnail(filename, duration) {
+    const vttFilePath = `${filename}.vtt`;
+
+    try {
+        fs.accessSync(vttFilePath);
+        console.log('\x1b[33m%s\x1b[0m', `${vttFilePath} already exists, skipping processing`);
+    } catch (err) {
+        const width = 320;
+        const height = 180;
+        const interval = 1;
+        const fps = 1 / interval;
+        const col = 10;
+        const row = 10;
+        const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
+        const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
+        const totalImages = Math.floor(duration / interval);
+        const totalSpirits = Math.ceil(duration / interval / (row * col));
+        const newStr = filename.replace(/^\/app\/public/, "");
+        const thumbOutput = [];
+
+        for (let k = 0; k < totalSpirits; k++) {
+            for (let i = 0; i < row; i++) {
+                for (let j = 0; j < col; j++) {
+                    const currentImageCount = k * row * col + i * col + j;
+                    if (currentImageCount > totalImages) {
+                        break;
+                    }
+                    thumbOutput.push(`${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}`);
+                    thumbOutput.push(`${newStr}-${(k + 1).toString().padStart(5, '0')}.jpg#xywh=${j * width},${i * height},${width},${height}`);
+                    thumbOutput.push('');
+                    startTime.add(interval, 'seconds');
+                    endTime.add(interval, 'seconds');
+                }
+            }
+        }
+
+        fs.writeFile(vttFilePath, thumbOutput.join('\n'), (err) => {
+            if (err) {
+                console.error('\x1b[31m%s\x1b[0m', `${vttFilePath} failed to write`);
+                return;
+            }
+            console.log('\x1b[32m%s\x1b[0m', `${vttFilePath} generated`);
+            const thumbnailPath = `${filename}-${totalImages.toString().padStart(5, '0')}.jpg`;
+            fs.access(thumbnailPath, (err) => {
+                if (err) {
+                    ffmpegQueue.push({
+                        filename,
+                        fps,
+                        width,
+                        height,
+                        col,
+                        row
+                    });
+                    if (runningTasks < maxConcurrentTasks) {
+                        startFFmpeg();
+                    }
+                }
+            });
+        });
+    }
+}
+
+function startFFmpeg() {
+    const task = ffmpegQueue.shift();
+    if (!task) {
+        return;
+    }
+    runningTasks++;
+    const {filename, fps, width, height, col, row} = task;
+    const ffmpeg = spawn('ffmpeg', [
+        '-i', `${filename}`,
+        '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`,
+        '-q:v', '30',
+        `${filename}-%05d.jpg`
+    ]);
+    ffmpeg.on('start', () => {
+        console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
+    });
+    ffmpeg.on('close', () => {
+        console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation success`);
         runningTasks--;
         if (ffmpegQueue.length > 0) {
             startFFmpeg();
