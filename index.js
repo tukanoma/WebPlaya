@@ -167,6 +167,7 @@ async function generateVttThumbnail(filename, duration) {
     }
 }*/
 
+
 async function generateVttThumbnail(filename, duration) {
     try {
         await fs.promises.access(`${filename}.vtt`);
@@ -207,36 +208,35 @@ async function generateVttThumbnail(filename, duration) {
             if (!err) {
                 return;
             }
-            if (ffmpegQueue.length < 2) {
-                startFFmpeg(filename, fps, width, height, col, row);
-            } else {
-                ffmpegQueue.enqueue({
-                    filename,
-                    fps,
-                    width,
-                    height,
-                    col,
-                    row
-                });
+            ffmpegQueue.push({
+                filename,
+                fps,
+                width,
+                height,
+                col,
+                row
+            });
+            if (ffmpegQueue.length <= 2) {
+                startFFmpeg();
             }
         });
     }
 }
 
-function startFFmpeg(filename, fps, width, height, col, row) {
+function startFFmpeg() {
+    const task = ffmpegQueue.shift();
+    if (!task) {
+        return;
+    }
+    const {filename, fps, width, height, col, row} = task;
     const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v', '30', `${filename}-%05d.jpg`]);
     ffmpeg.on('start', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation started`);
     });
-    ffmpeg.stderr.on('data', (data) => {
-        console.log(`${data}`);
-    });
     ffmpeg.on('close', () => {
         console.log('\x1b[32m%s\x1b[0m', `${filename} thumbnail generation successes`);
-        ffmpegQueue.dequeue();
         if (ffmpegQueue.length > 0) {
-            const task = ffmpegQueue.peek();
-            startFFmpeg(task.filename, task.fps, task.width, task.height, task.col, task.row);
+            startFFmpeg();
         }
     });
 }
