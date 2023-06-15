@@ -142,7 +142,7 @@ async function generateVttThumbnail(filename, duration) {
             if (!err) {
                 return;
             }
-            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v 30', '-y', `${filename}-%05d.jpg`]);
+            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v 30', `${filename}-%05d.jpg`, '-y']);
             ffmpeg.stdout.on('data', (data) => {
                 console.log(`stdout: ${data}`);
             });
