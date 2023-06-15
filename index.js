@@ -5,12 +5,12 @@ const chokidar = require('chokidar');
 const ffmpeg = require('fluent-ffmpeg');
 const moment = require("moment");
 const fastify = require('fastify')({
-    http2: true,
+/*    http2: true,
     https: {
         allowHTTP1: true,
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH)
-    },
+    },*/
     logger: false
 });
 
@@ -51,7 +51,7 @@ fastify.get('/files/:folderPath', function (req, res) {
 
 fastify.listen({port: 3000, host: '0.0.0.0'}, (err, address) => {
     if (err) throw err
-    fastify.log.info(`server listening on ${address}`);
+    console.log(`server listening on ${address}`);
 })
 
 fastify.get('/thumbs/', (req, res) => {
@@ -110,8 +110,8 @@ async function generateVttThumbnail(filename, duration) {
         const height = 180;
         const interval = 1;
         const fps = 1 / interval;
-        const col = 15;
-        const row = 15;
+        const col = 10;
+        const row = 10;
         let thumbOutput = 'WEBVTT\n\n';
         const startTime = moment('00:00:00', 'HH:mm:ss.SSS');
         const endTime = moment('00:00:00', 'HH:mm:ss.SSS').add(interval, 'seconds');
@@ -127,7 +127,9 @@ async function generateVttThumbnail(filename, duration) {
                     }
                     thumbOutput += `${startTime.format('HH:mm:ss.SSS')} --> ${endTime.format('HH:mm:ss.SSS')}\n`;
 
-                    thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}\n\n`;
+                    thumbOutput += `${newStr}-${(k + 1).toString().padStart(5, '0')}.jpg#xywh=${j * width},${i * height},${width},${height}\n\n`;
+
+                    //thumbOutput += `${newStr}-${k + 1 < 10 ? '0' : ''}${k + 1}.jpg#xywh=${j * width},${i * height},${width},${height}\n\n`;
 
                     startTime.add(interval, 'seconds');
                     endTime.add(interval, 'seconds');
@@ -136,11 +138,11 @@ async function generateVttThumbnail(filename, duration) {
         }
         fs.writeFileSync(`${filename}.vtt`, thumbOutput);
         console.log('\x1b[32m%s\x1b[0m', `${filename} Processing complete`);
-        fs.access(`${filename}-01.jpg`, (err) => {
+        fs.access(`${filename}-00001.jpg`, (err) => {
             if (!err) {
                 return;
             }
-            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-y', `${filename}-%02d.jpg`]);
+            const ffmpeg = spawn('ffmpeg', ['-i', `${filename}`, '-vf', `fps=${fps},scale=${width}:${height},tile=${col}x${row}`, '-q:v 30', '-y', `${filename}-%05d.jpg`]);
             ffmpeg.stdout.on('data', (data) => {
                 console.log(`stdout: ${data}`);
             });

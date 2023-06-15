@@ -44,7 +44,7 @@ function loadFiles(path = '') {
                             {
                                 title: `${file.name}`,
                                 src: `/videos${path}/${file.name}`,
-                                type: 'video/mp4',
+                                //type: 'video/mp4',
                             },
                         ],
                         previewThumbnails: {
