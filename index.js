@@ -77,9 +77,7 @@ function monitorFiles() {
                     return false;
                 }
                 const duration = metadata.format.duration;
-                generateVttThumbnail(filePath, duration).then(() => {
-                    return true;
-                });
+                generateVttThumbnail(filePath, duration)
             });
         }
     });
@@ -167,9 +165,9 @@ async function generateVttThumbnail(filename, duration) {
 }*/
 
 
-async function generateVttThumbnail(filename, duration) {
+function generateVttThumbnail(filename, duration) {
     try {
-        await fs.promises.access(`${filename}.vtt`);
+        fs.accessSync(`${filename}.vtt`);
         console.log('\x1b[33m%s\x1b[0m', `${filename}.vtt already exists, skipping processing`);
     } catch (err) {
         const width = 320;
