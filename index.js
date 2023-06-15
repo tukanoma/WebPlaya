@@ -76,7 +76,9 @@ function monitorFiles() {
                     return false;
                 }
                 const duration = metadata.format.duration;
-                generateVttThumbnail(filePath, duration)
+                generateVttThumbnail(filePath, duration).catch((err) => {
+                    console.error(err);
+                });
             });
         }
     });
@@ -391,7 +393,7 @@ async function generateVttThumbnail(filename, duration) {
                 row
             });
             if (runningTasks < maxConcurrentTasks) {
-                startFFmpeg();
+                await startFFmpeg();
             }
         }
     }
